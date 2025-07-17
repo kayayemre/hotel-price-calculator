@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const hotelPrices = getHotelPrices();
 
     // Process each hotel
-    const flatResponse: any = {
+    const flatResponse: Record<string, unknown> = {
       searchParams: {
         checkIn,
         checkOut,
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
             acc[key] = result;
           }
           return acc;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, typeof priceResults[0]>);
 
         // Convert to flat structure
         const comboResults = Object.values(resultsByCombo).filter(Boolean);
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
         // If only one combination, use simple numbering
         if (comboResults.length === 1) {
-          const result = comboResults[0] as any;
+          const result = comboResults[0];
           
           flatResponse[`hotelName_${hotelCounter}`] = hotel.otel_adi;
           flatResponse[`city_${hotelCounter}`] = hotel.otel_lokasyon;
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
           flatResponse[`info_${hotelCounter}`] = hotel.otel_info;
           
           // Add each combination with letter suffix
-          comboResults.forEach((result: any, index: number) => {
+          comboResults.forEach((result, index: number) => {
             const suffix = letters[index] || index.toString();
             
             flatResponse[`roomType_${hotelCounter}_${suffix}`] = result.roomType;
