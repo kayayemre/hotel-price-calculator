@@ -9,11 +9,16 @@ import { calculateHotelPrices, getBestPriceForHotel } from '@/lib/algorithms/pri
 export async function POST(request: NextRequest) {
   try {
     // Parse request body
-    const body: SearchRequest = await request.json();
-    const { checkIn, checkOut, adults, children } = body;
+    const body = await request.json();
+    const { checkin, checkout, adults, children, childAges } = body;
+
+    // Map new format to existing variables
+    const checkIn = checkin;
+    const checkOut = checkout;
+    const childrenAges = childAges || [];
 
     // Validate input parameters
-    const validation = validateSearchParams(checkIn, checkOut, adults, children);
+    const validation = validateSearchParams(checkIn, checkOut, adults, childrenAges);
     if (!validation.isValid) {
       return NextResponse.json(
         { error: 'Geçersiz parametreler', details: validation.errors },
@@ -36,8 +41,8 @@ export async function POST(request: NextRequest) {
         checkOut,
         totalNights: nights,
         totalAdults: adults, // Original request adults
-        totalChildren: children.length, // Original request children count
-        childrenAges: children.join(', ') // Original children ages
+        totalChildren: children || childrenAges.length, // Use children param or childAges length
+        childrenAges: childrenAges.join(', ') // Original children ages
       }
     };
 
@@ -53,7 +58,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Find optimal room distribution
-        const roomDistribution = findOptimalRoomDistribution(adults, children, hotelRoomMultipliers);
+        const roomDistribution = findOptimalRoomDistribution(adults, childrenAges, hotelRoomMultipliers);
         
         if (!roomDistribution.isValid || roomDistribution.arrangements.length === 0) {
           continue; // Skip hotel if no valid room arrangements found
@@ -156,10 +161,11 @@ export async function GET() {
       endpoint: '/api/calculate-price',
       method: 'POST',
       example: {
-        checkIn: '2025-08-01',
-        checkOut: '2025-08-05',
+        checkin: '2025-08-15',
+        checkout: '2025-08-20',
         adults: 2,
-        children: [8, 12]
+        children: 1,
+        childAges: [6]
       }
     },
     { status: 200 }
