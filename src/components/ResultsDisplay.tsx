@@ -1,13 +1,31 @@
 'use client';
 
+interface HotelOption {
+  roomType: string;
+  totalRooms: number;
+  concept: string;
+  totalPrice: number;
+}
+
+interface ParsedHotel {
+  number: string;
+  name: string;
+  city: string;
+  website: string;
+  tel: string;
+  whatsapp: string;
+  info: string;
+  options: HotelOption[];
+}
+
 interface ResultsDisplayProps {
-  results: any;
+  results: Record<string, unknown>;
 }
 
 export default function ResultsDisplay({ results }: ResultsDisplayProps) {
   // Parse flat response to organized hotel data
-  const parseResults = (data: any) => {
-    const hotels: any[] = [];
+  const parseResults = (data: Record<string, unknown>): ParsedHotel[] => {
+    const hotels: ParsedHotel[] = [];
     const keys = Object.keys(data).filter(key => key.startsWith('hotelName_'));
     
     for (const key of keys) {
@@ -20,15 +38,15 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
       
       if (hasMultipleOptions) {
         // Hotel with multiple room/concept combinations
-        const hotel = {
+        const hotel: ParsedHotel = {
           number: hotelNumber,
-          name: data[`hotelName_${hotelNumber}`],
-          city: data[`city_${hotelNumber}`],
-          website: data[`website_${hotelNumber}`],
-          tel: data[`tel_${hotelNumber}`],
-          whatsapp: data[`whatsapp_${hotelNumber}`],
-          info: data[`info_${hotelNumber}`],
-          options: [] as any[]
+          name: String(data[`hotelName_${hotelNumber}`] || ''),
+          city: String(data[`city_${hotelNumber}`] || ''),
+          website: String(data[`website_${hotelNumber}`] || ''),
+          tel: String(data[`tel_${hotelNumber}`] || ''),
+          whatsapp: String(data[`whatsapp_${hotelNumber}`] || ''),
+          info: String(data[`info_${hotelNumber}`] || ''),
+          options: []
         };
         
         // Find all options (a, b, c...)
@@ -39,32 +57,32 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
         
         for (const suffix of optionKeys) {
           hotel.options.push({
-            roomType: data[`roomType_${hotelNumber}_${suffix}`],
-            totalRooms: data[`totalRooms_${hotelNumber}_${suffix}`],
-            concept: data[`concept_${hotelNumber}_${suffix}`],
-            totalPrice: data[`totalPrice_${hotelNumber}_${suffix}`]
+            roomType: String(data[`roomType_${hotelNumber}_${suffix}`] || ''),
+            totalRooms: Number(data[`totalRooms_${hotelNumber}_${suffix}`] || 0),
+            concept: String(data[`concept_${hotelNumber}_${suffix}`] || ''),
+            totalPrice: Number(data[`totalPrice_${hotelNumber}_${suffix}`] || 0)
           });
         }
         
         // Sort options by price
-        hotel.options.sort((a: any, b: any) => a.totalPrice - b.totalPrice);
+        hotel.options.sort((a, b) => a.totalPrice - b.totalPrice);
         hotels.push(hotel);
         
       } else {
         // Hotel with single option
-        const hotel = {
+        const hotel: ParsedHotel = {
           number: hotelNumber,
-          name: data[`hotelName_${hotelNumber}`],
-          city: data[`city_${hotelNumber}`],
-          website: data[`website_${hotelNumber}`],
-          tel: data[`tel_${hotelNumber}`],
-          whatsapp: data[`whatsapp_${hotelNumber}`],
-          info: data[`info_${hotelNumber}`],
+          name: String(data[`hotelName_${hotelNumber}`] || ''),
+          city: String(data[`city_${hotelNumber}`] || ''),
+          website: String(data[`website_${hotelNumber}`] || ''),
+          tel: String(data[`tel_${hotelNumber}`] || ''),
+          whatsapp: String(data[`whatsapp_${hotelNumber}`] || ''),
+          info: String(data[`info_${hotelNumber}`] || ''),
           options: [{
-            roomType: data[`roomType_${hotelNumber}`],
-            totalRooms: data[`totalRooms_${hotelNumber}`],
-            concept: data[`concept_${hotelNumber}`],
-            totalPrice: data[`totalPrice_${hotelNumber}`]
+            roomType: String(data[`roomType_${hotelNumber}`] || ''),
+            totalRooms: Number(data[`totalRooms_${hotelNumber}`] || 0),
+            concept: String(data[`concept_${hotelNumber}`] || ''),
+            totalPrice: Number(data[`totalPrice_${hotelNumber}`] || 0)
           }]
         };
         
@@ -74,15 +92,15 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
     
     // Sort hotels by cheapest option
     return hotels.sort((a, b) => {
-      const minPriceA = Math.min(...a.options.map((opt: any) => opt.totalPrice));
-      const minPriceB = Math.min(...b.options.map((opt: any) => opt.totalPrice));
+      const minPriceA = Math.min(...a.options.map(opt => opt.totalPrice));
+      const minPriceB = Math.min(...b.options.map(opt => opt.totalPrice));
       return minPriceA - minPriceB;
     });
   };
 
   const hotels = parseResults(results);
 
-  const formatPrice = (price: number) => {
+  const formatPrice = (price: number): string => {
     return new Intl.NumberFormat('tr-TR', {
       style: 'currency',
       currency: 'TRY',
@@ -90,11 +108,11 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
     }).format(price);
   };
 
-  const getRoomText = (roomCount: number) => {
+  const getRoomText = (roomCount: number): string => {
     return roomCount === 1 ? '1 Oda' : `${roomCount} Oda`;
   };
 
-  const getPriceColor = (price: number, allPrices: number[]) => {
+  const getPriceColor = (price: number, allPrices: number[]): string => {
     const minPrice = Math.min(...allPrices);
     const maxPrice = Math.max(...allPrices);
     
@@ -105,8 +123,11 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
 
   // Get all prices for comparison
   const allPrices = hotels.flatMap(hotel => 
-    hotel.options.map((opt: any) => opt.totalPrice)
+    hotel.options.map(opt => opt.totalPrice)
   );
+
+  // Get search params safely
+  const searchParams = results.searchParams as Record<string, unknown> || {};
 
   if (hotels.length === 0) {
     return (
@@ -130,7 +151,7 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
                 {hotels.length} Otel Bulundu
               </p>
               <p className="text-sm text-blue-700">
-                {results.searchParams.totalNights} gece konaklama
+                {String(searchParams.totalNights || '')} gece konaklama
               </p>
             </div>
           </div>
@@ -210,7 +231,7 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
 
             {/* Hotel Options */}
             <div className="divide-y divide-gray-100">
-              {hotel.options.map((option: any, optionIndex: number) => (
+              {hotel.options.map((option, optionIndex) => (
                 <div key={optionIndex} className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -238,7 +259,7 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
                         {formatPrice(option.totalPrice)}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {results.searchParams.totalNights} gece toplam
+                        {String(searchParams.totalNights || '')} gece toplam
                       </div>
                       {option.totalPrice === Math.min(...allPrices) && (
                         <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
@@ -269,7 +290,7 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
           <strong>Önemli Bilgiler:</strong>
         </p>
         <ul className="space-y-1 ml-6">
-          <li>• Fiyatlar {results.searchParams.totalNights} gece konaklama için toplam tutardır</li>
+          <li>• Fiyatlar {String(searchParams.totalNights || '')} gece konaklama için toplam tutardır</li>
           <li>• Çocuk yaş sınırları otellere göre değişiklik gösterebilir</li>
           <li>• Rezervasyon için otelin iletişim bilgilerini kullanın</li>
           <li>• Fiyatlar anlık olarak hesaplanmış olup değişiklik gösterebilir</li>
