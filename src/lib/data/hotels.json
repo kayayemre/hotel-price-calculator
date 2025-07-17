@@ -1,0 +1,47 @@
+[
+  {
+    "otel_id": 1,
+    "otel_adi": "De Mare Family Hotel",
+    "otel_lokasyon": "Antalya - Alanya",
+    "otel_sitesi": "https://www.demarefamilyhotel.net",
+    "otel_no": "0242 524 55 96",
+    "otel_whatsapp": "https://wa.me/902425245674",
+    "otel_info": "Denize Sıfır"
+  },
+  {
+    "otel_id": 2,
+    "otel_adi": "Club SVS Hotel",
+    "otel_lokasyon": "Antalya - Alanya",
+    "otel_sitesi": "https://www.clubsvshotel.com",
+    "otel_no": "0242 524 56 80",
+    "otel_whatsapp": "https://wa.me/902425245680",
+    "otel_info": "Denize Sıfır"
+  },
+  {
+    "otel_id": 3,
+    "otel_adi": "Grand Barhan Hotel",
+    "otel_lokasyon": "Antalya - Alanya",
+    "otel_sitesi": "https://www.grandbarhanhotel.net",
+    "otel_no": "0242 524 59 34",
+    "otel_whatsapp": "https://wa.me/902425245934",
+    "otel_info": "Denize Sıfır"
+  },
+  {
+    "otel_id": 4,
+    "otel_adi": "Mesut Hotel",
+    "otel_lokasyon": "Antalya - Alanya",
+    "otel_sitesi": "https://www.mesuthotalanya.com",
+    "otel_no": "0242 524 55 94",
+    "otel_whatsapp": "https://wa.me/902425245594",
+    "otel_info": "Denize Sıfır"
+  },
+  {
+    "otel_id": 5,
+    "otel_adi": "Dream of Ölüdeniz Hotel",
+    "otel_lokasyon": "Fethiye - Ölüdeniz",
+    "otel_sitesi": "https://www.dreamofoludenizhotel.com",
+    "otel_no": "0252 424 02 80",
+    "otel_whatsapp": "https://wa.me/902524240334",
+    "otel_info": "Denize 700 metre"
+  }
+]
