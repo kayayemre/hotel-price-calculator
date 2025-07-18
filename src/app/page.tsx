@@ -25,7 +25,13 @@ export default function HomePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(searchData)
+        body: JSON.stringify({
+          checkin: searchData.checkIn,
+          checkout: searchData.checkOut,
+          adults: searchData.adults,
+          children: searchData.children.length,
+          childAges: searchData.children
+        })
       });
 
       if (!response.ok) {
