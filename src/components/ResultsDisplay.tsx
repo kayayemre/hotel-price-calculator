@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 interface HotelOption {
   roomType: string;
   totalRooms: number;
@@ -16,6 +18,7 @@ interface ParsedHotel {
   whatsapp: string;
   info: string;
   options: HotelOption[];
+  photos: string[];
 }
 
 interface ResultsDisplayProps {
@@ -30,6 +33,15 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
     
     for (const key of keys) {
       const hotelNumber = key.split('_')[1];
+      
+      // Sample photos for each hotel (you can replace with real URLs)
+      const samplePhotos = [
+        `https://images.unsplash.com/photo-156607379${hotelNumber}4-1a8506099945?w=500&h=300&fit=crop`,
+        `https://images.unsplash.com/photo-158271947${hotelNumber}0-c89cae4dc85b?w=500&h=300&fit=crop`,
+        `https://images.unsplash.com/photo-157189634${hotelNumber}2-33c89424de2d?w=500&h=300&fit=crop`,
+        `https://images.unsplash.com/photo-152025049${hotelNumber}1-112f2f40a3f4?w=500&h=300&fit=crop`,
+        `https://images.unsplash.com/photo-156450104${hotelNumber}2-61c2a3083791?w=500&h=300&fit=crop`
+      ];
       
       // Check if this hotel has multiple options (a, b, c...)
       const hasMultipleOptions = Object.keys(data).some(k => 
@@ -46,6 +58,7 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
           tel: String(data[`tel_${hotelNumber}`] || ''),
           whatsapp: String(data[`whatsapp_${hotelNumber}`] || ''),
           info: String(data[`info_${hotelNumber}`] || ''),
+          photos: samplePhotos,
           options: []
         };
         
@@ -78,6 +91,7 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
           tel: String(data[`tel_${hotelNumber}`] || ''),
           whatsapp: String(data[`whatsapp_${hotelNumber}`] || ''),
           info: String(data[`info_${hotelNumber}`] || ''),
+          photos: samplePhotos,
           options: [{
             roomType: String(data[`roomType_${hotelNumber}`] || ''),
             totalRooms: Number(data[`totalRooms_${hotelNumber}`] || 0),
@@ -131,7 +145,7 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
 
   if (hotels.length === 0) {
     return (
-      <div className="p-8 text-center text-gray-500">
+      <div className="p-4 sm:p-8 text-center text-gray-500">
         <div className="text-4xl mb-4">🏨</div>
         <p className="text-lg mb-2">Hiç sonuç bulunamadı</p>
         <p className="text-sm">Farklı tarih veya misafir sayısı ile tekrar deneyin</p>
@@ -140,24 +154,24 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       {/* Summary */}
-      <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+      <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center space-x-3">
             <div className="text-2xl">📊</div>
             <div>
-              <p className="font-semibold text-blue-900">
+              <p className="font-semibold text-blue-900 text-sm sm:text-base">
                 {hotels.length} Otel Bulundu
               </p>
-              <p className="text-sm text-blue-700">
+              <p className="text-xs sm:text-sm text-blue-700">
                 {String(searchParams.totalNights || '')} gece konaklama
               </p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-blue-700">En Uygun Fiyat</p>
-            <p className="text-lg font-bold text-blue-900">
+          <div className="text-left sm:text-right">
+            <p className="text-xs sm:text-sm text-blue-700">En Uygun Fiyat</p>
+            <p className="text-lg sm:text-xl font-bold text-blue-900">
               {formatPrice(Math.min(...allPrices))}
             </p>
           </div>
@@ -165,136 +179,217 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
       </div>
 
       {/* Hotel Results */}
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {hotels.map((hotel, index) => (
-          <div key={hotel.number} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-            {/* Hotel Header */}
-            <div className="bg-gray-50 px-4 py-3 border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {index + 1}. {hotel.name}
-                  </h3>
-                  <div className="flex items-center space-x-4 mt-1">
-                    <p className="text-sm text-gray-600 flex items-center">
-                      <span className="mr-1">📍</span>
-                      {hotel.city}
-                    </p>
-                    <p className="text-sm text-gray-600 flex items-center">
-                      <span className="mr-1">ℹ️</span>
-                      {hotel.info}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  {hotel.options.length > 1 && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">
-                      {hotel.options.length} Seçenek
-                    </span>
-                  )}
-                  <div className="flex items-center space-x-2">
-                    {hotel.website && (
-                      <a 
-                        href={hotel.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
-                        title="Website'yi Ziyaret Et"
-                      >
-                        🌐
-                      </a>
-                    )}
-                    {hotel.tel && (
-                      <a 
-                        href={`tel:${hotel.tel}`}
-                        className="text-green-600 hover:text-green-800 text-sm flex items-center"
-                        title={`Telefon: ${hotel.tel}`}
-                      >
-                        📞
-                      </a>
-                    )}
-                    {hotel.whatsapp && (
-                      <a 
-                        href={hotel.whatsapp} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-green-600 hover:text-green-800 text-sm flex items-center"
-                        title="WhatsApp'tan İletişim"
-                      >
-                        💬
-                      </a>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Hotel Options */}
-            <div className="divide-y divide-gray-100">
-              {hotel.options.map((option, optionIndex) => (
-                <div key={optionIndex} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-4 mb-2">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-900">
-                            🏠 {option.roomType}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            ({getRoomText(option.totalRooms)})
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span className="flex items-center">
-                          <span className="mr-1">🍽️</span>
-                          {option.concept}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-right ml-4">
-                      <div className={`text-xl font-bold ${getPriceColor(option.totalPrice, allPrices)}`}>
-                        {formatPrice(option.totalPrice)}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {String(searchParams.totalNights || '')} gece toplam
-                      </div>
-                      {option.totalPrice === Math.min(...allPrices) && (
-                        <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
-                          🏆 En Uygun
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {optionIndex === 0 && hotel.options.length > 1 && (
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <p className="text-xs text-gray-500 italic">
-                        ⬇ Bu otelin diğer seçenekleri aşağıda
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+          <HotelCard 
+            key={hotel.number} 
+            hotel={hotel} 
+            index={index} 
+            allPrices={allPrices}
+            searchParams={searchParams}
+            formatPrice={formatPrice}
+            getRoomText={getRoomText}
+            getPriceColor={getPriceColor}
+          />
         ))}
       </div>
 
       {/* Footer Info */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg text-sm text-gray-600">
-        <p className="flex items-center mb-2">
+      <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-gray-50 rounded-xl text-xs sm:text-sm text-gray-600">
+        <p className="flex items-center mb-2 font-medium">
           <span className="mr-2">ℹ️</span>
-          <strong>Önemli Bilgiler:</strong>
+          Önemli Bilgiler:
         </p>
-        <ul className="space-y-1 ml-6">
+        <ul className="space-y-1 ml-6 text-xs">
           <li>• Fiyatlar {String(searchParams.totalNights || '')} gece konaklama için toplam tutardır</li>
           <li>• Çocuk yaş sınırları otellere göre değişiklik gösterebilir</li>
           <li>• Rezervasyon için otelin iletişim bilgilerini kullanın</li>
           <li>• Fiyatlar anlık olarak hesaplanmış olup değişiklik gösterebilir</li>
         </ul>
+      </div>
+    </div>
+  );
+}
+
+// Hotel Card Component
+function HotelCard({ hotel, index, allPrices, searchParams, formatPrice, getRoomText, getPriceColor }: {
+  hotel: ParsedHotel;
+  index: number;
+  allPrices: number[];
+  searchParams: Record<string, unknown>;
+  formatPrice: (price: number) => string;
+  getRoomText: (count: number) => string;
+  getPriceColor: (price: number, allPrices: number[]) => string;
+}) {
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+
+  const nextPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev + 1) % hotel.photos.length);
+  };
+
+  const prevPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev - 1 + hotel.photos.length) % hotel.photos.length);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+      {/* Photo Carousel */}
+      <div className="relative h-48 sm:h-56 overflow-hidden">
+        <img 
+          src={hotel.photos[currentPhotoIndex]} 
+          alt={hotel.name}
+          className="w-full h-full object-cover transition-transform duration-500"
+        />
+        
+        {/* Photo Navigation */}
+        <div className="absolute inset-0 flex items-center justify-between p-2">
+          <button 
+            onClick={prevPhoto}
+            className="bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button 
+            onClick={nextPhoto}
+            className="bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Photo Dots */}
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+          {hotel.photos.map((_, photoIndex) => (
+            <button
+              key={photoIndex}
+              onClick={() => setCurrentPhotoIndex(photoIndex)}
+              className={`w-2 h-2 rounded-full transition-colors ${
+                photoIndex === currentPhotoIndex ? 'bg-white' : 'bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Best Price Badge */}
+        {Math.min(...hotel.options.map(opt => opt.totalPrice)) === Math.min(...allPrices) && (
+          <div className="absolute top-3 left-3">
+            <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+              🏆 En Uygun
+            </span>
+          </div>
+        )}
+
+        {/* Ranking Badge */}
+        <div className="absolute top-3 right-3">
+          <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+            #{index + 1}
+          </span>
+        </div>
+      </div>
+
+      {/* Hotel Info */}
+      <div className="p-4">
+        {/* Hotel Header */}
+        <div className="mb-4">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">
+            {hotel.name}
+          </h3>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center text-sm text-gray-600">
+              <span className="mr-1">📍</span>
+              {hotel.city}
+            </div>
+            <div className="flex items-center text-sm text-orange-600 font-medium">
+              <span className="mr-1">ℹ️</span>
+              {hotel.info}
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Buttons */}
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          {hotel.website && (
+            <a 
+              href={hotel.website} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 p-3 rounded-xl transition-colors text-blue-600"
+            >
+              <span className="text-lg mb-1">🌐</span>
+              <span className="text-xs font-medium">Website</span>
+            </a>
+          )}
+          {hotel.tel && (
+            <a 
+              href={`tel:${hotel.tel}`}
+              className="flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 p-3 rounded-xl transition-colors text-green-600"
+            >
+              <span className="text-lg mb-1">📞</span>
+              <span className="text-xs font-medium">Telefon</span>
+            </a>
+          )}
+          {hotel.whatsapp && (
+            <a 
+              href={hotel.whatsapp} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex flex-col items-center justify-center bg-green-50 hover:bg-green-100 p-3 rounded-xl transition-colors text-green-600"
+            >
+              <span className="text-lg mb-1">💬</span>
+              <span className="text-xs font-medium">WhatsApp</span>
+            </a>
+          )}
+        </div>
+
+        {/* Room Options */}
+        <div className="space-y-3">
+          {hotel.options.map((option, optionIndex) => (
+            <div key={optionIndex} className="bg-gray-50 rounded-xl p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-gray-900 truncate">
+                        🏠 {option.roomType}
+                      </span>
+                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full whitespace-nowrap">
+                        {getRoomText(option.totalRooms)}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600 flex items-center">
+                        <span className="mr-1">🍽️</span>
+                        {option.concept}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className={`text-xl sm:text-2xl font-bold ${getPriceColor(option.totalPrice, allPrices)}`}>
+                    {formatPrice(option.totalPrice)}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {String(searchParams.totalNights || '')} gece toplam
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {hotel.options.length > 1 && (
+          <div className="mt-3 text-center">
+            <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+              {hotel.options.length} farklı seçenek mevcut
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
