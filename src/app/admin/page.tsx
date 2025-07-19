@@ -34,9 +34,46 @@ export default function AdminPage() {
     fiyat: 0
   });
 
+  // Authentication states
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Admin password (in production, this should be in environment variables)
+  const ADMIN_PASSWORD = '982751';
+
   useEffect(() => {
-    loadData();
+    // Check if user is already authenticated (session storage)
+    const savedAuth = sessionStorage.getItem('adminAuth');
+    if (savedAuth === 'true') {
+      setIsAuthenticated(true);
+      loadData();
+    } else {
+      setLoading(false);
+    }
   }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+
+    if (password === ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('adminAuth', 'true');
+      setLoading(true);
+      loadData();
+    } else {
+      setLoginError('Hatalı şifre! Lütfen tekrar deneyin.');
+      setPassword('');
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('adminAuth');
+    setPassword('');
+  };
 
   const loadData = async () => {
     try {
@@ -200,6 +237,72 @@ export default function AdminPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p>Veriler yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Login Screen
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="max-w-md w-full mx-4">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            {/* Logo */}
+            <div className="text-center mb-8">
+              <div className="text-4xl mb-4">🏨</div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Paneli</h1>
+              <p className="text-gray-600">Fiyat yönetim sistemine hoş geldiniz</p>
+            </div>
+
+            {/* Login Form */}
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Şifresi
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Şifrenizi girin"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? '🙈' : '👁️'}
+                  </button>
+                </div>
+              </div>
+
+              {loginError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-red-700 text-sm">🚫 {loginError}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
+              >
+                🔐 Giriş Yap
+              </button>
+            </form>
+
+            {/* Info */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <p className="text-xs text-gray-600 text-center">
+                🔒 Bu alan sadece yetkili personel içindir.<br/>
+                Şifrenizi unuttuysanız sistem yöneticisiyle iletişime geçin.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     );
