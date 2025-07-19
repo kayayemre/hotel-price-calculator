@@ -1,317 +1,60 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import SearchForm from '@/components/SearchForm';
+import ResultsDisplay from '@/components/ResultsDisplay';
+import Link from 'next/link';
 
-interface HotelPrice {
-  otel_id: number;
-  oda_tipi: string;
-  tarih_baslangic: string;
-  tarih_bitis: string;
-  konsept: string;
-  fiyat: number;
-  para_birimi: string;
-}
+export default function HomePage() {
+  const [results, setResults] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-interface Hotel {
-  otel_id: number;
-  otel_adi: string;
-  otel_lokasyon: string;
-}
-
-export default function AdminPage() {
-  const [prices, setPrices] = useState<HotelPrice[]>([]);
-  const [hotels, setHotels] = useState<Hotel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
-  const [selectedHotel, setSelectedHotel] = useState<number>(0);
-  const [editingPrice, setEditingPrice] = useState<number | null>(null);
-  const [editingDate, setEditingDate] = useState<number | null>(null);
-  const [showAddForm, setShowAddForm] = useState<number | null>(null);
-  const [newPeriod, setNewPeriod] = useState({
-    tarih_baslangic: '',
-    tarih_bitis: '',
-    fiyat: 0
-  });
-
-  // Authentication states
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Admin password (in production, this should be in environment variables)
-  const ADMIN_PASSWORD = '982751';
-
-  useEffect(() => {
-    // Check if user is already authenticated (session storage)
-    const savedAuth = sessionStorage.getItem('adminAuth');
-    if (savedAuth === 'true') {
-      setIsAuthenticated(true);
-      loadData();
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem('adminAuth', 'true');
-      setLoading(true);
-      loadData();
-    } else {
-      setLoginError('Hatalı şifre! Lütfen tekrar deneyin.');
-      setPassword('');
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem('adminAuth');
-    setPassword('');
-  };
-
-  const loadData = async () => {
-    try {
-      // Try API first
-      const [pricesRes, hotelsRes] = await Promise.all([
-        fetch('/api/admin/prices').catch(() => null),
-        fetch('/api/hotels').catch(() => null)
-      ]);
-
-      let pricesLoaded = false;
-      let hotelsLoaded = false;
-
-      if (pricesRes?.ok) {
-        const pricesData = await pricesRes.json();
-        setPrices(pricesData);
-        pricesLoaded = true;
-      }
-
-      if (hotelsRes?.ok) {
-        const hotelsData = await hotelsRes.json();
-        if (hotelsData.hotels) {
-          setHotels(hotelsData.hotels.map((h: any) => ({
-            otel_id: h.otel_id,
-            otel_adi: h.otel_adi,
-            otel_lokasyon: h.otel_lokasyon
-          })));
-          hotelsLoaded = true;
-        }
-      }
-
-      // Fallback to mock data if APIs fail
-      if (!pricesLoaded || !hotelsLoaded) {
-        console.log('API failed, using mock data');
-        
-        // Mock hotels data
-        const mockHotels = [
-          { otel_id: 1, otel_adi: "De Mare Family Hotel", otel_lokasyon: "Antalya - Alanya" },
-          { otel_id: 2, otel_adi: "Club SVS Hotel", otel_lokasyon: "Antalya - Alanya" },
-          { otel_id: 3, otel_adi: "Grand Barhan Hotel", otel_lokasyon: "Antalya - Alanya" },
-          { otel_id: 4, otel_adi: "Mesut Hotel", otel_lokasyon: "Antalya - Alanya" },
-          { otel_id: 5, otel_adi: "Dream of Ölüdeniz Hotel", otel_lokasyon: "Fethiye - Ölüdeniz" }
-        ];
-
-        // Mock prices data
-        const mockPrices = [
-          { otel_id: 1, oda_tipi: "Standard Oda", tarih_baslangic: "2025-07-17", tarih_bitis: "2025-08-31", konsept: "Alkolsüz Herşey Dahil", fiyat: 3000, para_birimi: "TL" },
-          { otel_id: 1, oda_tipi: "Standard Oda", tarih_baslangic: "2025-09-01", tarih_bitis: "2025-09-14", konsept: "Alkolsüz Herşey Dahil", fiyat: 2600, para_birimi: "TL" },
-          { otel_id: 2, oda_tipi: "Standard Oda", tarih_baslangic: "2025-07-17", tarih_bitis: "2025-08-20", konsept: "Alkollü Herşey Dahil", fiyat: 3100, para_birimi: "TL" },
-          { otel_id: 3, oda_tipi: "Kara Manzaralı Standard Oda", tarih_baslangic: "2025-07-16", tarih_bitis: "2025-07-19", konsept: "Alkolsüz Herşey Dahil", fiyat: 2750, para_birimi: "TL" },
-          { otel_id: 3, oda_tipi: "Deniz Manzaralı Standard Oda", tarih_baslangic: "2025-07-16", tarih_bitis: "2025-07-19", konsept: "Alkolsüz Herşey Dahil", fiyat: 3000, para_birimi: "TL" }
-        ];
-
-        if (!hotelsLoaded) setHotels(mockHotels);
-        if (!pricesLoaded) setPrices(mockPrices);
-        
-        setMessage('⚠️ Demo mod - API bağlantısı yok');
-      }
-
-    } catch (error) {
-      setMessage('Veriler yüklenirken hata oluştu: ' + error);
-      console.error('Data loading error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updatePrice = (index: number, newPrice: number) => {
-    const updatedPrices = [...prices];
-    updatedPrices[index].fiyat = newPrice;
-    setPrices(updatedPrices);
-  };
-
-  const updateDateRange = (index: number, field: 'tarih_baslangic' | 'tarih_bitis', newDate: string) => {
-    const updatedPrices = [...prices];
-    updatedPrices[index][field] = newDate;
-    setPrices(updatedPrices);
-  };
-
-  const deletePeriod = (index: number) => {
-    if (confirm('Bu fiyat periyodunu silmek istediğinizden emin misiniz?')) {
-      const updatedPrices = prices.filter((_, i) => i !== index);
-      setPrices(updatedPrices);
-      setMessage('🗑️ Fiyat periyodu silindi');
-    }
-  };
-
-  const addNewPeriod = (hotelId: number, roomType: string, concept: string) => {
-    if (!newPeriod.tarih_baslangic || !newPeriod.tarih_bitis || !newPeriod.fiyat) {
-      setMessage('❌ Lütfen tüm alanları doldurun');
-      return;
-    }
-
-    const newPrice = {
-      otel_id: hotelId,
-      oda_tipi: roomType,
-      tarih_baslangic: newPeriod.tarih_baslangic,
-      tarih_bitis: newPeriod.tarih_bitis,
-      konsept: concept,
-      fiyat: newPeriod.fiyat,
-      para_birimi: 'TL'
-    };
-
-    setPrices([...prices, newPrice]);
-    setNewPeriod({ tarih_baslangic: '', tarih_bitis: '', fiyat: 0 });
-    setShowAddForm(null);
-    setMessage('✅ Yeni fiyat periyodu eklendi');
-  };
-
-  const savePrices = async () => {
-    setSaving(true);
-    setMessage('');
+  const handleSearch = async (searchData: {
+    checkIn: string;
+    checkOut: string;
+    adults: number;
+    children: number[];
+  }) => {
+    setLoading(true);
+    setError(null);
+    setResults(null);
 
     try {
-      const response = await fetch('/api/admin/prices', {
+      const response = await fetch('/api/calculate-price', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prices })
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          checkin: searchData.checkIn,
+          checkout: searchData.checkOut,
+          adults: searchData.adults,
+          children: searchData.children.length,
+          childAges: searchData.children
+        })
       });
 
-      const result = await response.json();
+      console.log('Request sent:', {
+        checkin: searchData.checkIn,
+        checkout: searchData.checkOut,
+        adults: searchData.adults,
+        children: searchData.children.length,
+        childAges: searchData.children
+      });
 
-      if (response.ok) {
-        setMessage('✅ Fiyatlar başarıyla güncellendi ve GitHub\'a kaydedildi!');
-        if (result.commitSha) {
-          setMessage(prev => prev + ` (Commit: ${result.commitSha.substring(0, 7)})`);
-        }
-        setTimeout(() => setMessage(''), 5000);
-      } else {
-        setMessage('❌ Kayıt sırasında hata oluştu: ' + (result.error || 'Bilinmeyen hata'));
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    } catch (error) {
-      setMessage('❌ Bağlantı hatası: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata'));
+
+      const data = await response.json();
+      setResults(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Bilinmeyen hata oluştu');
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
-
-  const applyPercentageChange = (percentage: number) => {
-    const updatedPrices = prices.map(price => ({
-      ...price,
-      fiyat: Math.round(price.fiyat * (1 + percentage / 100))
-    }));
-    setPrices(updatedPrices);
-    setMessage(`📈 Tüm fiyatlara %${percentage} ${percentage > 0 ? 'zam' : 'indirim'} uygulandı`);
-  };
-
-  const filteredPrices = selectedHotel === 0 
-    ? prices 
-    : prices.filter(p => p.otel_id === selectedHotel);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('tr-TR').format(price);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p>Veriler yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Login Screen
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="max-w-md w-full mx-4">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            {/* Logo */}
-            <div className="text-center mb-8">
-              <div className="text-4xl mb-4">🏨</div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Admin Paneli</h1>
-              <p className="text-gray-600">Fiyat yönetim sistemine hoş geldiniz</p>
-            </div>
-
-            {/* Login Form */}
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                  Admin Şifresi
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Şifrenizi girin"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                  >
-                    {showPassword ? '🙈' : '👁️'}
-                  </button>
-                </div>
-              </div>
-
-              {loginError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-red-700 text-sm">🚫 {loginError}</p>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors"
-              >
-                🔐 Giriş Yap
-              </button>
-            </form>
-
-            {/* Info */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-600 text-center">
-                🔒 Bu alan sadece yetkili personel içindir.<br/>
-                Şifrenizi unuttuysanız sistem yöneticisiyle iletişime geçin.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -321,322 +64,201 @@ export default function AdminPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                🏨 Fiyat Yönetim Paneli
+                🏨 Otel Fiyat Hesaplama Sistemi
               </h1>
               <p className="text-gray-600 mt-2">
-                Otel fiyatlarını düzenleyin ve güncelleyin
+                5 otelde en uygun fiyatları bulun ve karşılaştırın
               </p>
             </div>
-            <a 
-              href="/"
-              className="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition-colors"
-            >
-              ← Ana Sayfa
-            </a>
+            <div className="flex gap-4">
+              <Link 
+                href="/admin"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium"
+              >
+                🔐 Admin Panel
+              </Link>
+              <Link 
+                href="/test"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+              >
+                🧪 API Test
+              </Link>
+            </div>
           </div>
         </div>
       </header>
 
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-16">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            En Uygun Otel Fiyatlarını Bulun
+          </h2>
+          <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
+            Antalya ve Fethiye'deki 5 farklı otelde aynı anda arama yapın, 
+            fiyatları karşılaştırın ve en uygun seçeneği bulun
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+              <div className="text-3xl mb-3">🔍</div>
+              <h3 className="text-lg font-semibold mb-2">Hızlı Arama</h3>
+              <p className="text-blue-100">Tek aramada 5 otelin fiyatlarını görün</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+              <div className="text-3xl mb-3">💰</div>
+              <h3 className="text-lg font-semibold mb-2">En Uygun Fiyat</h3>
+              <p className="text-blue-100">Otomatik fiyat karşılaştırması</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
+              <div className="text-3xl mb-3">📞</div>
+              <h3 className="text-lg font-semibold mb-2">Direkt İletişim</h3>
+              <p className="text-blue-100">Otel ile doğrudan iletişim kurun</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           
-          {/* Message */}
-          {message && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-blue-800">{message}</p>
+          {/* Hotels Info */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-2xl font-semibold mb-6 text-gray-800 text-center">
+              🏨 Arama Yapabileceğiniz Oteller
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="bg-blue-50 rounded-lg p-4">
+                <h3 className="font-bold text-blue-900">De Mare Family Hotel</h3>
+                <p className="text-blue-700 text-sm">Antalya - Alanya</p>
+                <p className="text-blue-600 text-xs mt-1">Denize Sıfır • Alkolsüz Her Şey Dahil</p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <h3 className="font-bold text-green-900">Club SVS Hotel</h3>
+                <p className="text-green-700 text-sm">Antalya - Alanya</p>
+                <p className="text-green-600 text-xs mt-1">Denize Sıfır • Alkollü Her Şey Dahil</p>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <h3 className="font-bold text-purple-900">Grand Barhan Hotel</h3>
+                <p className="text-purple-700 text-sm">Antalya - Alanya</p>
+                <p className="text-purple-600 text-xs mt-1">Denize Sıfır • Çoklu Oda Seçenekleri</p>
+              </div>
+              <div className="bg-orange-50 rounded-lg p-4">
+                <h3 className="font-bold text-orange-900">Mesut Hotel</h3>
+                <p className="text-orange-700 text-sm">Antalya - Alanya</p>
+                <p className="text-orange-600 text-xs mt-1">Denize Sıfır • Alkollü Her Şey Dahil</p>
+              </div>
+              <div className="bg-teal-50 rounded-lg p-4 md:col-span-2 lg:col-span-1">
+                <h3 className="font-bold text-teal-900">Dream of Ölüdeniz</h3>
+                <p className="text-teal-700 text-sm">Fethiye - Ölüdeniz</p>
+                <p className="text-teal-600 text-xs mt-1">Denize 700m • Alkollü Her Şey Dahil</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Search Form */}
+          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              🔍 Otel Arama
+            </h2>
+            <SearchForm onSearch={handleSearch} loading={loading} />
+          </div>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="bg-white rounded-lg shadow-md p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600">Fiyatlar hesaplanıyor...</p>
+              <p className="text-sm text-gray-500 mt-2">5 otelden fiyat alınıyor</p>
             </div>
           )}
 
-          {/* Controls */}
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-              
-              {/* Hotel Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Otel Filtrele
-                </label>
-                <select
-                  value={selectedHotel}
-                  onChange={(e) => setSelectedHotel(Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value={0}>Tüm Oteller</option>
-                  {hotels.map(hotel => (
-                    <option key={hotel.otel_id} value={hotel.otel_id}>
-                      {hotel.otel_adi}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Quick Actions */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hızlı İşlemler
-                </label>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => applyPercentageChange(10)}
-                    className="px-3 py-2 bg-green-100 text-green-700 rounded-md hover:bg-green-200 text-sm"
-                  >
-                    +10%
-                  </button>
-                  <button
-                    onClick={() => applyPercentageChange(-10)}
-                    className="px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 text-sm"
-                  >
-                    -10%
-                  </button>
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+              <div className="flex items-center">
+                <div className="text-red-600 mr-3">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
                 </div>
-              </div>
-
-              {/* Stats */}
-              <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  İstatistikler
-                </label>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="bg-blue-50 p-3 rounded">
-                    <p className="text-blue-600 font-medium">Toplam Fiyat</p>
-                    <p className="text-lg font-bold text-blue-900">
-                      {filteredPrices.length}
-                    </p>
-                  </div>
-                  <div className="bg-green-50 p-3 rounded">
-                    <p className="text-green-600 font-medium">Ortalama Fiyat</p>
-                    <p className="text-lg font-bold text-green-900">
-                      {formatPrice(Math.round(filteredPrices.reduce((acc, p) => acc + p.fiyat, 0) / filteredPrices.length))} ₺
-                    </p>
-                  </div>
+                <div>
+                  <h3 className="text-red-800 font-medium">Hata Oluştu</h3>
+                  <p className="text-red-700 mt-1">{error}</p>
+                  <p className="text-red-600 text-sm mt-2">
+                    Lütfen farklı tarihler deneyiniz veya sayfayı yenileyiniz.
+                  </p>
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Save Button */}
-            <div className="mt-4 pt-4 border-t">
-              <button
-                onClick={savePrices}
-                disabled={saving}
-                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-3 px-6 rounded-lg transition-colors"
-              >
-                {saving ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Kaydediliyor...
-                  </div>
-                ) : (
-                  '💾 Değişiklikleri Kaydet'
-                )}
-              </button>
+          {/* Results */}
+          {results && !loading && (
+            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-green-50 border-b border-green-200 p-4">
+                <h2 className="text-xl font-semibold text-green-800">
+                  🎉 Arama Sonuçları
+                </h2>
+                <p className="text-green-700 mt-1">
+                  {results.searchParams?.checkIn} - {results.searchParams?.checkOut} 
+                  ({results.searchParams?.totalAdults} Yetişkin
+                  {results.searchParams?.totalChildren > 0 && `, ${results.searchParams?.totalChildren} Çocuk`})
+                  • {results.searchParams?.totalNights} gece
+                </p>
+              </div>
+              <ResultsDisplay results={results} />
             </div>
-          </div>
+          )}
 
-          {/* Prices Table - Group by Hotel */}
-          <div className="space-y-6">
-            {hotels.filter(hotel => selectedHotel === 0 || hotel.otel_id === selectedHotel).map(hotel => {
-              const hotelPrices = prices.filter(p => p.otel_id === hotel.otel_id);
-              
-              if (hotelPrices.length === 0) return null;
-              
-              return (
-                <div key={hotel.otel_id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  {/* Hotel Header */}
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                    <h3 className="text-xl font-bold text-white">{hotel.otel_adi}</h3>
-                    <p className="text-blue-100">{hotel.otel_lokasyon} • {hotelPrices.length} fiyat kaydı</p>
-                  </div>
-                  
-                  {/* Hotel Prices Table */}
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Oda Tipi</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Konsept</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Başlangıç</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bitiş</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fiyat</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {hotelPrices.map((price, index) => {
-                          const originalIndex = prices.findIndex(p => 
-                            p.otel_id === price.otel_id && 
-                            p.oda_tipi === price.oda_tipi && 
-                            p.konsept === price.konsept &&
-                            p.tarih_baslangic === price.tarih_baslangic
-                          );
-                          
-                          return (
-                            <tr key={`${price.otel_id}-${price.oda_tipi}-${price.konsept}-${price.tarih_baslangic}`} className="hover:bg-gray-50">
-                              <td className="px-4 py-4 text-sm font-medium text-gray-900">{price.oda_tipi}</td>
-                              <td className="px-4 py-4 text-sm text-gray-600">{price.konsept}</td>
-                              
-                              {/* Start Date */}
-                              <td className="px-4 py-4">
-                                {editingDate === originalIndex ? (
-                                  <input
-                                    type="date"
-                                    value={price.tarih_baslangic}
-                                    onChange={(e) => updateDateRange(originalIndex, 'tarih_baslangic', e.target.value)}
-                                    onBlur={() => setEditingDate(null)}
-                                    className="w-32 px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    autoFocus
-                                  />
-                                ) : (
-                                  <span 
-                                    onClick={() => setEditingDate(originalIndex)}
-                                    className="cursor-pointer hover:bg-yellow-100 px-2 py-1 rounded text-sm text-gray-900 transition-colors"
-                                  >
-                                    {formatDate(price.tarih_baslangic)}
-                                  </span>
-                                )}
-                              </td>
-
-                              {/* End Date */}
-                              <td className="px-4 py-4">
-                                {editingDate === originalIndex ? (
-                                  <input
-                                    type="date"
-                                    value={price.tarih_bitis}
-                                    onChange={(e) => updateDateRange(originalIndex, 'tarih_bitis', e.target.value)}
-                                    onBlur={() => setEditingDate(null)}
-                                    className="w-32 px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                  />
-                                ) : (
-                                  <span 
-                                    onClick={() => setEditingDate(originalIndex)}
-                                    className="cursor-pointer hover:bg-yellow-100 px-2 py-1 rounded text-sm text-gray-900 transition-colors"
-                                  >
-                                    {formatDate(price.tarih_bitis)}
-                                  </span>
-                                )}
-                              </td>
-
-                              {/* Price */}
-                              <td className="px-4 py-4">
-                                {editingPrice === originalIndex ? (
-                                  <input
-                                    type="number"
-                                    value={price.fiyat}
-                                    onChange={(e) => updatePrice(originalIndex, Number(e.target.value))}
-                                    onBlur={() => setEditingPrice(null)}
-                                    onKeyDown={(e) => e.key === 'Enter' && setEditingPrice(null)}
-                                    className="w-32 px-3 py-2 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    autoFocus
-                                  />
-                                ) : (
-                                  <span 
-                                    onClick={() => setEditingPrice(originalIndex)}
-                                    className="cursor-pointer hover:bg-yellow-100 px-3 py-2 rounded font-bold text-lg text-gray-900 transition-colors"
-                                  >
-                                    {formatPrice(price.fiyat)} ₺
-                                  </span>
-                                )}
-                              </td>
-
-                              {/* Actions */}
-                              <td className="px-4 py-4">
-                                <div className="flex space-x-2">
-                                  <button
-                                    onClick={() => setEditingPrice(originalIndex)}
-                                    className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs font-medium transition-colors"
-                                  >
-                                    ✏️ Fiyat
-                                  </button>
-                                  <button
-                                    onClick={() => setEditingDate(originalIndex)}
-                                    className="bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded text-xs font-medium transition-colors"
-                                  >
-                                    📅 Tarih
-                                  </button>
-                                  <button
-                                    onClick={() => deletePeriod(originalIndex)}
-                                    className="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded text-xs font-medium transition-colors"
-                                  >
-                                    🗑️ Sil
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-
-                        {/* Add New Period Row */}
-                        {showAddForm === hotel.otel_id && (
-                          <tr className="bg-green-50">
-                            <td className="px-4 py-4 text-sm font-medium text-green-800">
-                              {hotelPrices[0]?.oda_tipi || 'Standard Oda'}
-                            </td>
-                            <td className="px-4 py-4 text-sm text-green-800">
-                              {hotelPrices[0]?.konsept || 'Alkolsüz Herşey Dahil'}
-                            </td>
-                            <td className="px-4 py-4">
-                              <input
-                                type="date"
-                                value={newPeriod.tarih_baslangic}
-                                onChange={(e) => setNewPeriod({...newPeriod, tarih_baslangic: e.target.value})}
-                                className="w-32 px-2 py-1 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                                placeholder="Başlangıç"
-                              />
-                            </td>
-                            <td className="px-4 py-4">
-                              <input
-                                type="date"
-                                value={newPeriod.tarih_bitis}
-                                onChange={(e) => setNewPeriod({...newPeriod, tarih_bitis: e.target.value})}
-                                className="w-32 px-2 py-1 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                                placeholder="Bitiş"
-                              />
-                            </td>
-                            <td className="px-4 py-4">
-                              <input
-                                type="number"
-                                value={newPeriod.fiyat}
-                                onChange={(e) => setNewPeriod({...newPeriod, fiyat: Number(e.target.value)})}
-                                className="w-32 px-3 py-2 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
-                                placeholder="Fiyat"
-                              />
-                            </td>
-                            <td className="px-4 py-4">
-                              <div className="flex space-x-2">
-                                <button
-                                  onClick={() => addNewPeriod(hotel.otel_id, hotelPrices[0]?.oda_tipi || 'Standard Oda', hotelPrices[0]?.konsept || 'Alkolsüz Herşey Dahil')}
-                                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
-                                >
-                                  ✅ Ekle
-                                </button>
-                                <button
-                                  onClick={() => setShowAddForm(null)}
-                                  className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded text-xs font-medium transition-colors"
-                                >
-                                  ❌ İptal
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-
-                    {/* Add New Period Button */}
-                    <div className="p-4 border-t bg-gray-50">
-                      <button
-                        onClick={() => setShowAddForm(hotel.otel_id)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        ➕ Yeni Fiyat Periyodu Ekle
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          {/* Info Section */}
+          <div className="mt-12 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              ℹ️ Nasıl Çalışır?
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-600">
+              <div>
+                <h3 className="font-medium text-gray-800 mb-2">1. Tarih ve Misafir Sayısı</h3>
+                <p>Konaklama tarihlerinizi ve misafir sayınızı girin. Çocuklar için yaş belirtmeyi unutmayın.</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-800 mb-2">2. Otomatik Fiyat Hesaplama</h3>
+                <p>Sistem tüm otellerdeki uygun fiyatları hesaplar ve en uygun seçenekleri sunar.</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-800 mb-2">3. Fiyat Karşılaştırması</h3>
+                <p>Tüm otellerin fiyatlarını yan yana görüp en uygun olanı seçebilirsiniz.</p>
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-800 mb-2">4. Direkt Rezervasyon</h3>
+                <p>Beğendiğiniz oteli seçip telefon, WhatsApp veya web sitesi üzerinden rezervasyon yapın.</p>
+              </div>
+            </div>
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t mt-16">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center text-gray-600">
+            <p className="mb-2">
+              <span className="font-semibold">Hotel Price Calculator</span> © 2025
+            </p>
+            <p className="text-sm">
+              Antalya ve Fethiye otelleri için fiyat karşılaştırma sistemi
+            </p>
+            <div className="mt-4 flex justify-center space-x-4">
+              <Link href="/admin" className="text-blue-600 hover:text-blue-800 text-sm">
+                Admin Panel
+              </Link>
+              <Link href="/test" className="text-blue-600 hover:text-blue-800 text-sm">
+                API Test
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
