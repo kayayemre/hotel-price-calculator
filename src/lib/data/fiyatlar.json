@@ -1,51 +1,389 @@
 [
-  {"otel_id": 1, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-07-17", "tarih_bitis": "2025-08-31", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3000, "para_birimi": "TL"},
-  {"otel_id": 1, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-09-01", "tarih_bitis": "2025-09-14", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 2600, "para_birimi": "TL"},
-  {"otel_id": 1, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-09-15", "tarih_bitis": "2025-09-22", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 2350, "para_birimi": "TL"},
-  {"otel_id": 1, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-09-23", "tarih_bitis": "2025-10-06", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 1560, "para_birimi": "TL"},
-  {"otel_id": 1, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-10-07", "tarih_bitis": "2025-10-20", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 1150, "para_birimi": "TL"},
-  
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-07-17", "tarih_bitis": "2025-08-20", "konsept": "Alkollü Herşey Dahil", "fiyat": 3100, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-08-21", "tarih_bitis": "2025-08-25", "konsept": "Alkollü Herşey Dahil", "fiyat": 2850, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-08-26", "tarih_bitis": "2025-09-07", "konsept": "Alkollü Herşey Dahil", "fiyat": 2650, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-09-08", "tarih_bitis": "2025-09-25", "konsept": "Alkollü Herşey Dahil", "fiyat": 2350, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-09-26", "tarih_bitis": "2025-10-06", "konsept": "Alkollü Herşey Dahil", "fiyat": 1800, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-10-07", "tarih_bitis": "2025-10-20", "konsept": "Alkollü Herşey Dahil", "fiyat": 1450, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-07-17", "tarih_bitis": "2025-08-20", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3000, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-08-21", "tarih_bitis": "2025-08-25", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 2750, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-08-26", "tarih_bitis": "2025-09-07", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 2560, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-09-08", "tarih_bitis": "2025-09-25", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 2250, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-09-26", "tarih_bitis": "2025-10-06", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 1700, "para_birimi": "TL"},
-  {"otel_id": 2, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-10-07", "tarih_bitis": "2025-10-20", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 1350, "para_birimi": "TL"},
-  
-  {"otel_id": 3, "oda_tipi": "Kara Manzaralı Standard Oda", "tarih_baslangic": "2025-07-16", "tarih_bitis": "2025-07-19", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 2750, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Kara Manzaralı Standard Oda", "tarih_baslangic": "2025-07-20", "tarih_bitis": "2025-07-24", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3300, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Kara Manzaralı Standard Oda", "tarih_baslangic": "2025-07-25", "tarih_bitis": "2025-08-24", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3500, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Kara Manzaralı Standard Oda", "tarih_baslangic": "2025-08-25", "tarih_bitis": "2025-09-10", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3000, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Kara Manzaralı Standard Oda", "tarih_baslangic": "2025-09-11", "tarih_bitis": "2025-09-30", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 2500, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Kara Manzaralı Standard Oda", "tarih_baslangic": "2025-10-01", "tarih_bitis": "2025-10-31", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 1800, "para_birimi": "TL"},
-  
-  {"otel_id": 3, "oda_tipi": "Deniz Manzaralı Standard Oda", "tarih_baslangic": "2025-07-16", "tarih_bitis": "2025-07-19", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3000, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Deniz Manzaralı Standard Oda", "tarih_baslangic": "2025-07-20", "tarih_bitis": "2025-07-24", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3750, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Deniz Manzaralı Standard Oda", "tarih_baslangic": "2025-07-25", "tarih_bitis": "2025-08-24", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3700, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Deniz Manzaralı Standard Oda", "tarih_baslangic": "2025-08-25", "tarih_bitis": "2025-09-10", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3200, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Deniz Manzaralı Standard Oda", "tarih_baslangic": "2025-09-11", "tarih_bitis": "2025-09-30", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 2600, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Deniz Manzaralı Standard Oda", "tarih_baslangic": "2025-10-01", "tarih_bitis": "2025-10-31", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 1900, "para_birimi": "TL"},
-  
-  {"otel_id": 3, "oda_tipi": "Ara Kapılı Aile Odası", "tarih_baslangic": "2025-07-01", "tarih_bitis": "2025-07-24", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3250, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Ara Kapılı Aile Odası", "tarih_baslangic": "2025-07-25", "tarih_bitis": "2025-08-24", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3500, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Ara Kapılı Aile Odası", "tarih_baslangic": "2025-08-25", "tarih_bitis": "2025-09-10", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 3000, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Ara Kapılı Aile Odası", "tarih_baslangic": "2025-09-11", "tarih_bitis": "2025-09-30", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 2500, "para_birimi": "TL"},
-  {"otel_id": 3, "oda_tipi": "Ara Kapılı Aile Odası", "tarih_baslangic": "2025-10-01", "tarih_bitis": "2025-10-31", "konsept": "Alkolsüz Herşey Dahil", "fiyat": 1800, "para_birimi": "TL"},
-  
-  {"otel_id": 4, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-07-17", "tarih_bitis": "2025-09-30", "konsept": "Alkollü Herşey Dahil", "fiyat": 3350, "para_birimi": "TL"},
-  {"otel_id": 4, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-10-01", "tarih_bitis": "2025-10-15", "konsept": "Alkollü Herşey Dahil", "fiyat": 3000, "para_birimi": "TL"},
-  {"otel_id": 4, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-10-16", "tarih_bitis": "2025-10-31", "konsept": "Alkollü Herşey Dahil", "fiyat": 2250, "para_birimi": "TL"},
-  {"otel_id": 4, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-11-01", "tarih_bitis": "2025-11-15", "konsept": "Alkollü Herşey Dahil", "fiyat": 2000, "para_birimi": "TL"},
-  
-  {"otel_id": 5, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-07-17", "tarih_bitis": "2025-07-31", "konsept": "Alkollü Herşey Dahil", "fiyat": 4160, "para_birimi": "TL"},
-  {"otel_id": 5, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-08-01", "tarih_bitis": "2025-08-31", "konsept": "Alkollü Herşey Dahil", "fiyat": 4480, "para_birimi": "TL"},
-  {"otel_id": 5, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-09-01", "tarih_bitis": "2025-09-30", "konsept": "Alkollü Herşey Dahil", "fiyat": 3600, "para_birimi": "TL"},
-  {"otel_id": 5, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-10-01", "tarih_bitis": "2025-10-31", "konsept": "Alkollü Herşey Dahil", "fiyat": 3050, "para_birimi": "TL"},
-  {"otel_id": 5, "oda_tipi": "Standard Oda", "tarih_baslangic": "2025-11-01", "tarih_bitis": "2025-11-30", "konsept": "Alkollü Herşey Dahil", "fiyat": 2000, "para_birimi": "TL"}
+  {
+    "otel_id": 1,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-07-17",
+    "tarih_bitis": "2025-08-31",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3000,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 1,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-09-01",
+    "tarih_bitis": "2025-09-14",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 2600,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 1,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-09-15",
+    "tarih_bitis": "2025-09-22",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 2350,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 1,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-09-23",
+    "tarih_bitis": "2025-10-06",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 1560,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 1,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-10-07",
+    "tarih_bitis": "2025-10-20",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 1150,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-07-17",
+    "tarih_bitis": "2025-08-20",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 3100,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-08-21",
+    "tarih_bitis": "2025-08-25",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 2850,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-08-26",
+    "tarih_bitis": "2025-09-07",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 2650,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-09-08",
+    "tarih_bitis": "2025-09-25",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 2350,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-09-26",
+    "tarih_bitis": "2025-10-06",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 1800,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-10-07",
+    "tarih_bitis": "2025-10-20",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 1450,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-07-17",
+    "tarih_bitis": "2025-08-20",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3000,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-08-21",
+    "tarih_bitis": "2025-08-25",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 2750,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-08-26",
+    "tarih_bitis": "2025-09-07",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 2560,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-09-08",
+    "tarih_bitis": "2025-09-25",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 2250,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-09-26",
+    "tarih_bitis": "2025-10-06",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 1700,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 2,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-10-07",
+    "tarih_bitis": "2025-10-20",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 1350,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Kara Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-07-16",
+    "tarih_bitis": "2025-07-19",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 2750,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Kara Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-07-20",
+    "tarih_bitis": "2025-07-24",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3300,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Kara Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-07-25",
+    "tarih_bitis": "2025-08-24",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3500,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Kara Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-08-25",
+    "tarih_bitis": "2025-09-10",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3000,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Kara Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-09-11",
+    "tarih_bitis": "2025-09-30",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 2500,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Kara Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-10-01",
+    "tarih_bitis": "2025-10-31",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 1800,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Deniz Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-07-16",
+    "tarih_bitis": "2025-07-19",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3000,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Deniz Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-07-20",
+    "tarih_bitis": "2025-07-24",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3750,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Deniz Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-07-25",
+    "tarih_bitis": "2025-08-24",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3700,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Deniz Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-08-25",
+    "tarih_bitis": "2025-09-10",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3200,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Deniz Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-09-11",
+    "tarih_bitis": "2025-09-30",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 2600,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Deniz Manzaralı Standard Oda",
+    "tarih_baslangic": "2025-10-01",
+    "tarih_bitis": "2025-10-31",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 1900,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Ara Kapılı Aile Odası",
+    "tarih_baslangic": "2025-07-01",
+    "tarih_bitis": "2025-07-24",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3250,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Ara Kapılı Aile Odası",
+    "tarih_baslangic": "2025-07-25",
+    "tarih_bitis": "2025-08-24",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3500,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Ara Kapılı Aile Odası",
+    "tarih_baslangic": "2025-08-25",
+    "tarih_bitis": "2025-09-10",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 3000,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Ara Kapılı Aile Odası",
+    "tarih_baslangic": "2025-09-11",
+    "tarih_bitis": "2025-09-30",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 2500,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 3,
+    "oda_tipi": "Ara Kapılı Aile Odası",
+    "tarih_baslangic": "2025-10-01",
+    "tarih_bitis": "2025-10-31",
+    "konsept": "Alkolsüz Herşey Dahil",
+    "fiyat": 1800,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 4,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-07-17",
+    "tarih_bitis": "2025-09-30",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 3350,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 4,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-10-01",
+    "tarih_bitis": "2025-10-15",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 3000,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 4,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-10-16",
+    "tarih_bitis": "2025-10-31",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 2250,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 4,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-11-01",
+    "tarih_bitis": "2025-11-15",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 2000,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 5,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-07-17",
+    "tarih_bitis": "2025-07-31",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 3995,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 5,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-08-01",
+    "tarih_bitis": "2025-08-31",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 3995,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 5,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-09-01",
+    "tarih_bitis": "2025-09-30",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 3200,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 5,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-10-01",
+    "tarih_bitis": "2025-10-31",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 2700,
+    "para_birimi": "TL"
+  },
+  {
+    "otel_id": 5,
+    "oda_tipi": "Standard Oda",
+    "tarih_baslangic": "2025-11-01",
+    "tarih_bitis": "2025-11-30",
+    "konsept": "Alkollü Herşey Dahil",
+    "fiyat": 1840,
+    "para_birimi": "TL"
+  }
 ]
