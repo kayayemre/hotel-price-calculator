@@ -26,6 +26,13 @@ export default function AdminPage() {
   const [message, setMessage] = useState('');
   const [selectedHotel, setSelectedHotel] = useState<number>(0);
   const [editingPrice, setEditingPrice] = useState<number | null>(null);
+  const [editingDate, setEditingDate] = useState<number | null>(null);
+  const [showAddForm, setShowAddForm] = useState<number | null>(null);
+  const [newPeriod, setNewPeriod] = useState({
+    tarih_baslangic: '',
+    tarih_bitis: '',
+    fiyat: 0
+  });
 
   useEffect(() => {
     loadData();
@@ -33,29 +40,63 @@ export default function AdminPage() {
 
   const loadData = async () => {
     try {
+      // Try API first
       const [pricesRes, hotelsRes] = await Promise.all([
-        fetch('/api/admin/prices'),
-        fetch('/api/hotels')
+        fetch('/api/admin/prices').catch(() => null),
+        fetch('/api/hotels').catch(() => null)
       ]);
 
-      if (pricesRes.ok) {
+      let pricesLoaded = false;
+      let hotelsLoaded = false;
+
+      if (pricesRes?.ok) {
         const pricesData = await pricesRes.json();
         setPrices(pricesData);
+        pricesLoaded = true;
       }
 
-      if (hotelsRes.ok) {
+      if (hotelsRes?.ok) {
         const hotelsData = await hotelsRes.json();
-        // hotels array'ini doğru şekilde al
         if (hotelsData.hotels) {
           setHotels(hotelsData.hotels.map((h: any) => ({
             otel_id: h.otel_id,
             otel_adi: h.otel_adi,
             otel_lokasyon: h.otel_lokasyon
           })));
+          hotelsLoaded = true;
         }
       }
+
+      // Fallback to mock data if APIs fail
+      if (!pricesLoaded || !hotelsLoaded) {
+        console.log('API failed, using mock data');
+        
+        // Mock hotels data
+        const mockHotels = [
+          { otel_id: 1, otel_adi: "De Mare Family Hotel", otel_lokasyon: "Antalya - Alanya" },
+          { otel_id: 2, otel_adi: "Club SVS Hotel", otel_lokasyon: "Antalya - Alanya" },
+          { otel_id: 3, otel_adi: "Grand Barhan Hotel", otel_lokasyon: "Antalya - Alanya" },
+          { otel_id: 4, otel_adi: "Mesut Hotel", otel_lokasyon: "Antalya - Alanya" },
+          { otel_id: 5, otel_adi: "Dream of Ölüdeniz Hotel", otel_lokasyon: "Fethiye - Ölüdeniz" }
+        ];
+
+        // Mock prices data
+        const mockPrices = [
+          { otel_id: 1, oda_tipi: "Standard Oda", tarih_baslangic: "2025-07-17", tarih_bitis: "2025-08-31", konsept: "Alkolsüz Herşey Dahil", fiyat: 3000, para_birimi: "TL" },
+          { otel_id: 1, oda_tipi: "Standard Oda", tarih_baslangic: "2025-09-01", tarih_bitis: "2025-09-14", konsept: "Alkolsüz Herşey Dahil", fiyat: 2600, para_birimi: "TL" },
+          { otel_id: 2, oda_tipi: "Standard Oda", tarih_baslangic: "2025-07-17", tarih_bitis: "2025-08-20", konsept: "Alkollü Herşey Dahil", fiyat: 3100, para_birimi: "TL" },
+          { otel_id: 3, oda_tipi: "Kara Manzaralı Standard Oda", tarih_baslangic: "2025-07-16", tarih_bitis: "2025-07-19", konsept: "Alkolsüz Herşey Dahil", fiyat: 2750, para_birimi: "TL" },
+          { otel_id: 3, oda_tipi: "Deniz Manzaralı Standard Oda", tarih_baslangic: "2025-07-16", tarih_bitis: "2025-07-19", konsept: "Alkolsüz Herşey Dahil", fiyat: 3000, para_birimi: "TL" }
+        ];
+
+        if (!hotelsLoaded) setHotels(mockHotels);
+        if (!pricesLoaded) setPrices(mockPrices);
+        
+        setMessage('⚠️ Demo mod - API bağlantısı yok');
+      }
+
     } catch (error) {
-      setMessage('Veriler yüklenirken hata oluştu');
+      setMessage('Veriler yüklenirken hata oluştu: ' + error);
       console.error('Data loading error:', error);
     } finally {
       setLoading(false);
@@ -66,6 +107,42 @@ export default function AdminPage() {
     const updatedPrices = [...prices];
     updatedPrices[index].fiyat = newPrice;
     setPrices(updatedPrices);
+  };
+
+  const updateDateRange = (index: number, field: 'tarih_baslangic' | 'tarih_bitis', newDate: string) => {
+    const updatedPrices = [...prices];
+    updatedPrices[index][field] = newDate;
+    setPrices(updatedPrices);
+  };
+
+  const deletePeriod = (index: number) => {
+    if (confirm('Bu fiyat periyodunu silmek istediğinizden emin misiniz?')) {
+      const updatedPrices = prices.filter((_, i) => i !== index);
+      setPrices(updatedPrices);
+      setMessage('🗑️ Fiyat periyodu silindi');
+    }
+  };
+
+  const addNewPeriod = (hotelId: number, roomType: string, concept: string) => {
+    if (!newPeriod.tarih_baslangic || !newPeriod.tarih_bitis || !newPeriod.fiyat) {
+      setMessage('❌ Lütfen tüm alanları doldurun');
+      return;
+    }
+
+    const newPrice = {
+      otel_id: hotelId,
+      oda_tipi: roomType,
+      tarih_baslangic: newPeriod.tarih_baslangic,
+      tarih_bitis: newPeriod.tarih_bitis,
+      konsept: concept,
+      fiyat: newPeriod.fiyat,
+      para_birimi: 'TL'
+    };
+
+    setPrices([...prices, newPrice]);
+    setNewPeriod({ tarih_baslangic: '', tarih_bitis: '', fiyat: 0 });
+    setShowAddForm(null);
+    setMessage('✅ Yeni fiyat periyodu eklendi');
   };
 
   const savePrices = async () => {
@@ -269,9 +346,10 @@ export default function AdminPage() {
                         <tr>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Oda Tipi</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Konsept</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih Aralığı</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Başlangıç</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bitiş</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fiyat</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlemler</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -287,9 +365,49 @@ export default function AdminPage() {
                             <tr key={`${price.otel_id}-${price.oda_tipi}-${price.konsept}-${price.tarih_baslangic}`} className="hover:bg-gray-50">
                               <td className="px-4 py-4 text-sm font-medium text-gray-900">{price.oda_tipi}</td>
                               <td className="px-4 py-4 text-sm text-gray-600">{price.konsept}</td>
-                              <td className="px-4 py-4 text-sm text-gray-600">
-                                {formatDate(price.tarih_baslangic)} / {formatDate(price.tarih_bitis)}
+                              
+                              {/* Start Date */}
+                              <td className="px-4 py-4">
+                                {editingDate === originalIndex ? (
+                                  <input
+                                    type="date"
+                                    value={price.tarih_baslangic}
+                                    onChange={(e) => updateDateRange(originalIndex, 'tarih_baslangic', e.target.value)}
+                                    onBlur={() => setEditingDate(null)}
+                                    className="w-32 px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    autoFocus
+                                  />
+                                ) : (
+                                  <span 
+                                    onClick={() => setEditingDate(originalIndex)}
+                                    className="cursor-pointer hover:bg-yellow-100 px-2 py-1 rounded text-sm text-gray-900 transition-colors"
+                                  >
+                                    {formatDate(price.tarih_baslangic)}
+                                  </span>
+                                )}
                               </td>
+
+                              {/* End Date */}
+                              <td className="px-4 py-4">
+                                {editingDate === originalIndex ? (
+                                  <input
+                                    type="date"
+                                    value={price.tarih_bitis}
+                                    onChange={(e) => updateDateRange(originalIndex, 'tarih_bitis', e.target.value)}
+                                    onBlur={() => setEditingDate(null)}
+                                    className="w-32 px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                ) : (
+                                  <span 
+                                    onClick={() => setEditingDate(originalIndex)}
+                                    className="cursor-pointer hover:bg-yellow-100 px-2 py-1 rounded text-sm text-gray-900 transition-colors"
+                                  >
+                                    {formatDate(price.tarih_bitis)}
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Price */}
                               <td className="px-4 py-4">
                                 {editingPrice === originalIndex ? (
                                   <input
@@ -310,19 +428,100 @@ export default function AdminPage() {
                                   </span>
                                 )}
                               </td>
+
+                              {/* Actions */}
                               <td className="px-4 py-4">
-                                <button
-                                  onClick={() => setEditingPrice(originalIndex)}
-                                  className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-md text-sm font-medium transition-colors"
-                                >
-                                  ✏️ Düzenle
-                                </button>
+                                <div className="flex space-x-2">
+                                  <button
+                                    onClick={() => setEditingPrice(originalIndex)}
+                                    className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                  >
+                                    ✏️ Fiyat
+                                  </button>
+                                  <button
+                                    onClick={() => setEditingDate(originalIndex)}
+                                    className="bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                  >
+                                    📅 Tarih
+                                  </button>
+                                  <button
+                                    onClick={() => deletePeriod(originalIndex)}
+                                    className="bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded text-xs font-medium transition-colors"
+                                  >
+                                    🗑️ Sil
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           );
                         })}
+
+                        {/* Add New Period Row */}
+                        {showAddForm === hotel.otel_id && (
+                          <tr className="bg-green-50">
+                            <td className="px-4 py-4 text-sm font-medium text-green-800">
+                              {hotelPrices[0]?.oda_tipi || 'Standard Oda'}
+                            </td>
+                            <td className="px-4 py-4 text-sm text-green-800">
+                              {hotelPrices[0]?.konsept || 'Alkolsüz Herşey Dahil'}
+                            </td>
+                            <td className="px-4 py-4">
+                              <input
+                                type="date"
+                                value={newPeriod.tarih_baslangic}
+                                onChange={(e) => setNewPeriod({...newPeriod, tarih_baslangic: e.target.value})}
+                                className="w-32 px-2 py-1 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Başlangıç"
+                              />
+                            </td>
+                            <td className="px-4 py-4">
+                              <input
+                                type="date"
+                                value={newPeriod.tarih_bitis}
+                                onChange={(e) => setNewPeriod({...newPeriod, tarih_bitis: e.target.value})}
+                                className="w-32 px-2 py-1 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Bitiş"
+                              />
+                            </td>
+                            <td className="px-4 py-4">
+                              <input
+                                type="number"
+                                value={newPeriod.fiyat}
+                                onChange={(e) => setNewPeriod({...newPeriod, fiyat: Number(e.target.value)})}
+                                className="w-32 px-3 py-2 border border-green-300 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+                                placeholder="Fiyat"
+                              />
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => addNewPeriod(hotel.otel_id, hotelPrices[0]?.oda_tipi || 'Standard Oda', hotelPrices[0]?.konsept || 'Alkolsüz Herşey Dahil')}
+                                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                                >
+                                  ✅ Ekle
+                                </button>
+                                <button
+                                  onClick={() => setShowAddForm(null)}
+                                  className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1 rounded text-xs font-medium transition-colors"
+                                >
+                                  ❌ İptal
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
+
+                    {/* Add New Period Button */}
+                    <div className="p-4 border-t bg-gray-50">
+                      <button
+                        onClick={() => setShowAddForm(hotel.otel_id)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        ➕ Yeni Fiyat Periyodu Ekle
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
