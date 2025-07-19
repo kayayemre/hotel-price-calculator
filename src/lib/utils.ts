@@ -1,21 +1,37 @@
 // Utility Functions
 
 import { Hotel, RoomMultiplier, HotelPrice } from '@/types/hotel';
-import hotelsData from './data/hotels.json';
-import carpanlarData from './data/carpanlar.json';
-import fiyatlarData from './data/fiyatlar.json';
 
-// Data loaders
+// Data loaders with error handling
 export function getHotels(): Hotel[] {
-  return hotelsData as Hotel[];
+  try {
+    // Import JSON dynamically to avoid build issues
+    const hotelsData = require('./data/hotels.json');
+    return hotelsData as Hotel[];
+  } catch (error) {
+    console.error('Error loading hotels data:', error);
+    return [];
+  }
 }
 
 export function getRoomMultipliers(): RoomMultiplier[] {
-  return carpanlarData as RoomMultiplier[];
+  try {
+    const carpanlarData = require('./data/carpanlar.json');
+    return carpanlarData as RoomMultiplier[];
+  } catch (error) {
+    console.error('Error loading room multipliers data:', error);
+    return [];
+  }
 }
 
 export function getHotelPrices(): HotelPrice[] {
-  return fiyatlarData as HotelPrice[];
+  try {
+    const fiyatlarData = require('./data/fiyatlar.json');
+    return fiyatlarData as HotelPrice[];
+  } catch (error) {
+    console.error('Error loading prices data:', error);
+    return [];
+  }
 }
 
 // Date utilities
