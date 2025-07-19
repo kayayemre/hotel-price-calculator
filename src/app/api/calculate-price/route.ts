@@ -1,4 +1,4 @@
-// Calculate Price API Endpoint
+// Calculate Price API Endpoint - PROPER VERSION
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getHotels, getRoomMultipliers, getHotelPrices } from '@/lib/utils';
@@ -10,6 +10,76 @@ function calculateNights(checkIn: string, checkOut: string): number {
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
+function findSuitableRoomConfiguration(adults: number, children: number[], hotelMultipliers: any[]) {
+  // Find a room configuration that can accommodate the guests
+  for (const multiplier of hotelMultipliers) {
+    // Check if this room can handle the adults
+    if (multiplier.yetiskin_sayisi >= adults) {
+      // For now, simple check for children (can be enhanced)
+      if (multiplier.cocuk_sayisi >= children.length) {
+        return {
+          isValid: true,
+          roomType: multiplier.oda_tipi,
+          multiplier: multiplier.carpan,
+          adults: adults,
+          children: children.length
+        };
+      }
+    }
+  }
+  
+  // If no single room works, try multiple rooms (simplified)
+  if (adults <= 4) {
+    const standardRoom = hotelMultipliers.find(m => 
+      m.oda_tipi.includes('Standard') && m.yetiskin_sayisi >= 2
+    );
+    
+    if (standardRoom) {
+      const roomsNeeded = Math.ceil(adults / 2);
+      return {
+        isValid: true,
+        roomType: standardRoom.oda_tipi,
+        multiplier: standardRoom.carpan * roomsNeeded,
+        adults: adults,
+        children: children.length,
+        roomsNeeded: roomsNeeded
+      };
+    }
+  }
+  
+  return { isValid: false };
+}
+
+function findBestPrice(hotelPrices: any[], checkIn: string, checkOut: string, roomType?: string) {
+  // Filter prices by room type if specified
+  let availablePrices = roomType 
+    ? hotelPrices.filter(p => p.oda_tipi === roomType)
+    : hotelPrices;
+    
+  if (availablePrices.length === 0) {
+    availablePrices = hotelPrices; // Fallback to any price
+  }
+  
+  // Try to find price that covers our date range
+  const suitablePrice = availablePrices.find(price => {
+    try {
+      const priceStart = new Date(price.tarih_baslangic);
+      const priceEnd = new Date(price.tarih_bitis);
+      const checkInDate = new Date(checkIn);
+      const checkOutDate = new Date(checkOut);
+      
+      return checkInDate >= priceStart && checkOutDate <= priceEnd;
+    } catch {
+      return false;
+    }
+  });
+  
+  // Return suitable price or cheapest available
+  return suitablePrice || availablePrices.reduce((min, price) => 
+    price.fiyat < min.fiyat ? price : min
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
     console.log('=== Calculate Price API Started ===');
@@ -17,26 +87,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { checkin, checkout, adults, children, childAges } = body;
     
-    console.log('Request data:', { checkin, checkout, adults, children, childAges });
+    console.log('Request:', { checkin, checkout, adults, children, childAges });
     
     // Calculate nights
     const nights = calculateNights(checkin, checkout);
-    console.log('Calculated nights:', nights);
     
-    // Load data with timeout protection
-    console.log('Loading data...');
+    // Load data
     const hotels = getHotels();
     const roomMultipliers = getRoomMultipliers();
     const hotelPrices = getHotelPrices();
     
-    console.log('Data loaded:', {
-      hotels: hotels.length,
-      multipliers: roomMultipliers.length,
-      prices: hotelPrices.length
-    });
+    console.log('Data loaded:', { hotels: hotels.length, multipliers: roomMultipliers.length, prices: hotelPrices.length });
 
-    if (hotels.length === 0 || hotelPrices.length === 0) {
-      throw new Error('No data available');
+    if (hotels.length === 0) {
+      throw new Error('No hotels data');
     }
 
     const flatResponse: Record<string, unknown> = {
@@ -52,65 +116,57 @@ export async function POST(request: NextRequest) {
 
     let hotelCounter = 1;
 
-    // Process each hotel with simplified logic
+    // Process each hotel
     for (const hotel of hotels) {
       try {
         console.log('Processing hotel:', hotel.otel_adi);
         
+        // Get room multipliers for this hotel
+        const hotelRoomMultipliers = roomMultipliers.filter(rm => rm.otel_id === hotel.otel_id);
+        if (hotelRoomMultipliers.length === 0) {
+          console.log('No multipliers for hotel:', hotel.otel_adi);
+          continue;
+        }
+        
         // Get prices for this hotel
         const hotelPricesData = hotelPrices.filter(p => p.otel_id === hotel.otel_id);
-        
         if (hotelPricesData.length === 0) {
           console.log('No prices for hotel:', hotel.otel_adi);
           continue;
         }
 
-        // Find a suitable price for the date range
-        let suitablePrice = hotelPricesData.find(price => {
-          try {
-            const priceStart = new Date(price.tarih_baslangic);
-            const priceEnd = new Date(price.tarih_bitis);
-            const checkInDate = new Date(checkin);
-            const checkOutDate = new Date(checkout);
-            
-            return checkInDate >= priceStart && checkOutDate <= priceEnd;
-          } catch (dateError) {
-            console.log('Date parsing error for price:', dateError);
-            return false;
-          }
-        });
-
-        // If no exact match, use first available price
-        if (!suitablePrice) {
-          suitablePrice = hotelPricesData[0];
-          console.log('Using first available price for:', hotel.otel_adi);
+        // Find suitable room configuration
+        const roomConfig = findSuitableRoomConfiguration(adults, childAges || [], hotelRoomMultipliers);
+        if (!roomConfig.isValid) {
+          console.log('No suitable room config for hotel:', hotel.otel_adi);
+          continue;
         }
 
-        // Simple price calculation
-        const basePrice = suitablePrice.fiyat;
-        const multiplier = 2.0; // Simple multiplier for 2 adults
-        const totalPrice = Math.round(basePrice * multiplier * nights);
+        console.log('Room config found:', roomConfig);
 
-        console.log('Price calculated for', hotel.otel_adi, ':', totalPrice);
-
-        // Check if hotel has multiple room types
+        // Get unique room types for this hotel
         const uniqueRoomTypes = [...new Set(hotelPricesData.map(p => p.oda_tipi))];
         
         if (uniqueRoomTypes.length === 1) {
           // Single room type
+          const bestPrice = findBestPrice(hotelPricesData, checkin, checkout, roomConfig.roomType);
+          const totalPrice = Math.round(bestPrice.fiyat * roomConfig.multiplier * nights);
+          
           flatResponse[`hotelName_${hotelCounter}`] = hotel.otel_adi;
           flatResponse[`city_${hotelCounter}`] = hotel.otel_lokasyon;
           flatResponse[`website_${hotelCounter}`] = hotel.otel_sitesi;
           flatResponse[`tel_${hotelCounter}`] = hotel.otel_no;
           flatResponse[`whatsapp_${hotelCounter}`] = hotel.otel_whatsapp;
           flatResponse[`info_${hotelCounter}`] = hotel.otel_info;
-          flatResponse[`roomType_${hotelCounter}`] = suitablePrice.oda_tipi;
-          flatResponse[`totalRooms_${hotelCounter}`] = 1;
-          flatResponse[`concept_${hotelCounter}`] = suitablePrice.konsept;
+          flatResponse[`roomType_${hotelCounter}`] = bestPrice.oda_tipi;
+          flatResponse[`totalRooms_${hotelCounter}`] = roomConfig.roomsNeeded || 1;
+          flatResponse[`concept_${hotelCounter}`] = bestPrice.konsept;
           flatResponse[`totalPrice_${hotelCounter}`] = totalPrice;
           
+          console.log('Single room result:', hotel.otel_adi, totalPrice);
+          
         } else {
-          // Multiple room types - add hotel info once
+          // Multiple room types
           flatResponse[`hotelName_${hotelCounter}`] = hotel.otel_adi;
           flatResponse[`city_${hotelCounter}`] = hotel.otel_lokasyon;
           flatResponse[`website_${hotelCounter}`] = hotel.otel_sitesi;
@@ -118,26 +174,37 @@ export async function POST(request: NextRequest) {
           flatResponse[`whatsapp_${hotelCounter}`] = hotel.otel_whatsapp;
           flatResponse[`info_${hotelCounter}`] = hotel.otel_info;
           
-          // Add each room type option
           const letters = ['a', 'b', 'c', 'd'];
-          uniqueRoomTypes.forEach((roomType, index) => {
-            const roomPrice = hotelPricesData.find(p => p.oda_tipi === roomType);
-            if (roomPrice) {
-              const suffix = letters[index] || index.toString();
-              const roomTotalPrice = Math.round(roomPrice.fiyat * multiplier * nights);
+          let optionIndex = 0;
+          
+          for (const roomType of uniqueRoomTypes) {
+            // Find multiplier for this room type
+            const roomMultiplier = hotelRoomMultipliers.find(rm => rm.oda_tipi === roomType);
+            if (!roomMultiplier) continue;
+            
+            // Check if this room type can accommodate our guests
+            if (roomMultiplier.yetiskin_sayisi >= adults && roomMultiplier.cocuk_sayisi >= (childAges?.length || 0)) {
+              const bestPrice = findBestPrice(hotelPricesData, checkin, checkout, roomType);
+              const totalPrice = Math.round(bestPrice.fiyat * roomMultiplier.carpan * nights);
               
-              flatResponse[`roomType_${hotelCounter}_${suffix}`] = roomPrice.oda_tipi;
+              const suffix = letters[optionIndex] || optionIndex.toString();
+              
+              flatResponse[`roomType_${hotelCounter}_${suffix}`] = bestPrice.oda_tipi;
               flatResponse[`totalRooms_${hotelCounter}_${suffix}`] = 1;
-              flatResponse[`concept_${hotelCounter}_${suffix}`] = roomPrice.konsept;
-              flatResponse[`totalPrice_${hotelCounter}_${suffix}`] = roomTotalPrice;
+              flatResponse[`concept_${hotelCounter}_${suffix}`] = bestPrice.konsept;
+              flatResponse[`totalPrice_${hotelCounter}_${suffix}`] = totalPrice;
+              
+              optionIndex++;
             }
-          });
+          }
+          
+          console.log('Multiple room results:', hotel.otel_adi, optionIndex, 'options');
         }
         
         hotelCounter++;
 
       } catch (hotelError) {
-        console.error(`Error processing hotel ${hotel.otel_adi}:`, hotelError);
+        console.error(`Hotel processing error for ${hotel.otel_adi}:`, hotelError);
         continue;
       }
     }
