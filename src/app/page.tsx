@@ -20,7 +20,7 @@ export default function HomePage() {
     setResults(null);
 
     try {
-      const response = await fetch('/api/calculate-price', {
+      const response = await fetch('/api/test-price', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -32,6 +32,14 @@ export default function HomePage() {
           children: searchData.children.length,
           childAges: searchData.children
         })
+      });
+
+      console.log('Request sent:', {
+        checkin: searchData.checkIn,
+        checkout: searchData.checkOut,
+        adults: searchData.adults,
+        children: searchData.children.length,
+        childAges: searchData.children
       });
 
       if (!response.ok) {
