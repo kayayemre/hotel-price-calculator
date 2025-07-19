@@ -45,10 +45,18 @@ export default function AdminPage() {
 
       if (hotelsRes.ok) {
         const hotelsData = await hotelsRes.json();
-        setHotels(hotelsData.hotels || []);
+        // hotels array'ini doğru şekilde al
+        if (hotelsData.hotels) {
+          setHotels(hotelsData.hotels.map((h: any) => ({
+            otel_id: h.otel_id,
+            otel_adi: h.otel_adi,
+            otel_lokasyon: h.otel_lokasyon
+          })));
+        }
       }
     } catch (error) {
       setMessage('Veriler yüklenirken hata oluştu');
+      console.error('Data loading error:', error);
     } finally {
       setLoading(false);
     }
@@ -96,6 +104,14 @@ export default function AdminPage() {
   const filteredPrices = selectedHotel === 0 
     ? prices 
     : prices.filter(p => p.otel_id === selectedHotel);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('tr-TR').format(price);
@@ -231,73 +247,86 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Prices Table */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Otel</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Oda Tipi</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Konsept</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih Aralığı</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fiyat</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlem</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredPrices.map((price, index) => {
-                    const originalIndex = prices.findIndex(p => 
-                      p.otel_id === price.otel_id && 
-                      p.oda_tipi === price.oda_tipi && 
-                      p.konsept === price.konsept &&
-                      p.tarih_baslangic === price.tarih_baslangic
-                    );
-                    
-                    return (
-                      <tr key={`${price.otel_id}-${price.oda_tipi}-${price.konsept}-${price.tarih_baslangic}`} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 text-sm text-gray-900">
-                          {hotels.find(h => h.otel_id === price.otel_id)?.otel_adi}
-                        </td>
-                        <td className="px-4 py-4 text-sm text-gray-600">{price.oda_tipi}</td>
-                        <td className="px-4 py-4 text-sm text-gray-600">{price.konsept}</td>
-                        <td className="px-4 py-4 text-sm text-gray-600">
-                          {price.tarih_baslangic} / {price.tarih_bitis}
-                        </td>
-                        <td className="px-4 py-4">
-                          {editingPrice === originalIndex ? (
-                            <input
-                              type="number"
-                              value={price.fiyat}
-                              onChange={(e) => updatePrice(originalIndex, Number(e.target.value))}
-                              onBlur={() => setEditingPrice(null)}
-                              onKeyDown={(e) => e.key === 'Enter' && setEditingPrice(null)}
-                              className="w-24 px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              autoFocus
-                            />
-                          ) : (
-                            <span 
-                              onClick={() => setEditingPrice(originalIndex)}
-                              className="cursor-pointer hover:bg-yellow-100 px-2 py-1 rounded font-semibold text-gray-900"
-                            >
-                              {formatPrice(price.fiyat)} ₺
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-4">
-                          <button
-                            onClick={() => setEditingPrice(originalIndex)}
-                            className="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                          >
-                            ✏️ Düzenle
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+          {/* Prices Table - Group by Hotel */}
+          <div className="space-y-6">
+            {hotels.filter(hotel => selectedHotel === 0 || hotel.otel_id === selectedHotel).map(hotel => {
+              const hotelPrices = prices.filter(p => p.otel_id === hotel.otel_id);
+              
+              if (hotelPrices.length === 0) return null;
+              
+              return (
+                <div key={hotel.otel_id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  {/* Hotel Header */}
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                    <h3 className="text-xl font-bold text-white">{hotel.otel_adi}</h3>
+                    <p className="text-blue-100">{hotel.otel_lokasyon} • {hotelPrices.length} fiyat kaydı</p>
+                  </div>
+                  
+                  {/* Hotel Prices Table */}
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Oda Tipi</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Konsept</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tarih Aralığı</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fiyat</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">İşlem</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {hotelPrices.map((price, index) => {
+                          const originalIndex = prices.findIndex(p => 
+                            p.otel_id === price.otel_id && 
+                            p.oda_tipi === price.oda_tipi && 
+                            p.konsept === price.konsept &&
+                            p.tarih_baslangic === price.tarih_baslangic
+                          );
+                          
+                          return (
+                            <tr key={`${price.otel_id}-${price.oda_tipi}-${price.konsept}-${price.tarih_baslangic}`} className="hover:bg-gray-50">
+                              <td className="px-4 py-4 text-sm font-medium text-gray-900">{price.oda_tipi}</td>
+                              <td className="px-4 py-4 text-sm text-gray-600">{price.konsept}</td>
+                              <td className="px-4 py-4 text-sm text-gray-600">
+                                {formatDate(price.tarih_baslangic)} / {formatDate(price.tarih_bitis)}
+                              </td>
+                              <td className="px-4 py-4">
+                                {editingPrice === originalIndex ? (
+                                  <input
+                                    type="number"
+                                    value={price.fiyat}
+                                    onChange={(e) => updatePrice(originalIndex, Number(e.target.value))}
+                                    onBlur={() => setEditingPrice(null)}
+                                    onKeyDown={(e) => e.key === 'Enter' && setEditingPrice(null)}
+                                    className="w-32 px-3 py-2 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    autoFocus
+                                  />
+                                ) : (
+                                  <span 
+                                    onClick={() => setEditingPrice(originalIndex)}
+                                    className="cursor-pointer hover:bg-yellow-100 px-3 py-2 rounded font-bold text-lg text-gray-900 transition-colors"
+                                  >
+                                    {formatPrice(price.fiyat)} ₺
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-4">
+                                <button
+                                  onClick={() => setEditingPrice(originalIndex)}
+                                  className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-md text-sm font-medium transition-colors"
+                                >
+                                  ✏️ Düzenle
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </main>
