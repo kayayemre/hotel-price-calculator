@@ -20,7 +20,7 @@ export default function HomePage() {
     setResults(null);
 
     try {
-      const response = await fetch('/api/test-price', {
+      const response = await fetch('/api/calculate-price', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
