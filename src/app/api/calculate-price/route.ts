@@ -106,6 +106,7 @@ export async function POST(request: NextRequest) {
           flatResponse[`tel_${hotelCounter}`] = hotel.otel_no;
           flatResponse[`whatsapp_${hotelCounter}`] = hotel.otel_whatsapp;
           flatResponse[`info_${hotelCounter}`] = hotel.otel_info;
+          flatResponse[`photos_${hotelCounter}`] = (hotel as any).photos || [];
           flatResponse[`roomType_${hotelCounter}`] = result.roomType;
           flatResponse[`totalRooms_${hotelCounter}`] = result.roomArrangement.length;
           flatResponse[`concept_${hotelCounter}`] = result.concept;
@@ -123,6 +124,7 @@ export async function POST(request: NextRequest) {
           flatResponse[`tel_${hotelCounter}`] = hotel.otel_no;
           flatResponse[`whatsapp_${hotelCounter}`] = hotel.otel_whatsapp;
           flatResponse[`info_${hotelCounter}`] = hotel.otel_info;
+          flatResponse[`photos_${hotelCounter}`] = (hotel as any).photos || [];
           
           // Add each combination with letter suffix
           comboResults.forEach((result, index: number) => {
