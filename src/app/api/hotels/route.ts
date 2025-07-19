@@ -1,166 +1,150 @@
-// Calculate Price API Endpoint
+// Hotels API Endpoint
 
-import { NextRequest, NextResponse } from 'next/server';
-import { SearchRequest, SearchResponse, HotelResult } from '@/types/hotel';
-import { getHotels, getRoomMultipliers, getHotelPrices, validateSearchParams, getDaysBetween } from '@/lib/utils';
-import { findOptimalRoomDistribution } from '@/lib/algorithms/roomDistribution';
-import { calculateHotelPrices, getBestPriceForHotel } from '@/lib/algorithms/priceCalculation';
+import { NextResponse } from 'next/server';
+import { getHotels, getRoomMultipliers, getHotelPrices } from '@/lib/utils';
 
-export async function POST(request: NextRequest) {
+export async function GET() {
   try {
-    // Parse request body
-    const body: SearchRequest = await request.json();
-    const { checkIn, checkOut, adults, children } = body;
+    // Load all data
+    const hotels = getHotels();
+    const roomMultipliers = getRoomMultipliers();
+    const hotelPrices = getHotelPrices();
 
-    // Validate input parameters
-    const validation = validateSearchParams(checkIn, checkOut, adults, children);
-    if (!validation.isValid) {
+    // Prepare response with hotel details and available room types
+    const hotelDetails = hotels.map(hotel => {
+      // Get room types for this hotel
+      const hotelRoomMultipliers = roomMultipliers.filter(rm => rm.otel_id === hotel.otel_id);
+      const roomTypes = [...new Set(hotelRoomMultipliers.map(rm => rm.oda_tipi))];
+
+      // Get available concepts for this hotel
+      const hotelPricesData = hotelPrices.filter(hp => hp.otel_id === hotel.otel_id);
+      const concepts = [...new Set(hotelPricesData.map(hp => hp.konsept))];
+
+      // Get price range
+      const prices = hotelPricesData.map(hp => hp.fiyat);
+      const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+      const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+
+      return {
+        otel_id: hotel.otel_id,
+        otel_adi: hotel.otel_adi,
+        otel_lokasyon: hotel.otel_lokasyon,
+        otel_sitesi: hotel.otel_sitesi,
+        otel_no: hotel.otel_no,
+        otel_whatsapp: hotel.otel_whatsapp,
+        otel_info: hotel.otel_info,
+        roomTypes,
+        concepts,
+        priceRange: {
+          min: minPrice,
+          max: maxPrice,
+          currency: 'TL'
+        },
+        totalRoomConfigurations: hotelRoomMultipliers.length
+      };
+    });
+
+    return NextResponse.json({
+      success: true,
+      totalHotels: hotels.length,
+      hotels: hotelDetails
+    });
+
+  } catch (error) {
+    console.error('Hotels API error:', error);
+    return NextResponse.json(
+      { 
+        success: false,
+        error: 'Sunucu hatası', 
+        details: error instanceof Error ? error.message : 'Bilinmeyen hata' 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// POST endpoint for specific hotel details
+export async function POST(request: Request) {
+  try {
+    const { hotelId } = await request.json();
+
+    if (!hotelId) {
       return NextResponse.json(
-        { error: 'Geçersiz parametreler', details: validation.errors },
+        { error: 'Hotel ID gerekli' },
         { status: 400 }
       );
     }
-
-    // Calculate nights
-    const nights = getDaysBetween(checkIn, checkOut);
 
     // Load data
     const hotels = getHotels();
     const roomMultipliers = getRoomMultipliers();
     const hotelPrices = getHotelPrices();
 
-    // Process each hotel
-    const hotelResults: HotelResult[] = [];
-
-    for (const hotel of hotels) {
-      try {
-        // Get room multipliers for this hotel
-        const hotelRoomMultipliers = roomMultipliers.filter(rm => rm.otel_id === hotel.otel_id);
-        
-        if (hotelRoomMultipliers.length === 0) {
-          continue; // Skip hotel if no room configurations available
-        }
-
-        // Find optimal room distribution
-        const roomDistribution = findOptimalRoomDistribution(adults, children, hotelRoomMultipliers);
-        
-        if (!roomDistribution.isValid || roomDistribution.arrangements.length === 0) {
-          continue; // Skip hotel if no valid room arrangements found
-        }
-
-        // Get hotel prices for this hotel
-        const hotelPricesData = hotelPrices.filter(hp => hp.otel_id === hotel.otel_id);
-        
-        if (hotelPricesData.length === 0) {
-          continue; // Skip hotel if no prices available
-        }
-
-        // Calculate prices for all arrangements and concepts
-        const priceResults = calculateHotelPrices(
-          hotel.otel_id,
-          checkIn,
-          checkOut,
-          roomDistribution.arrangements,
-          hotelPricesData
-        );
-
-        // Group results by room type + concept combination
-        const resultsByCombo = priceResults.reduce((acc, result) => {
-          const key = `${result.roomType || 'Unknown'}_${result.concept}`;
-          if (!acc[key] || result.totalPrice < acc[key].totalPrice) {
-            acc[key] = result;
-          }
-          return acc;
-        }, {} as Record<string, any>);
-
-        // Convert to array and add to hotel results
-        Object.values(resultsByCombo).forEach((bestPrice: any) => {
-          if (!bestPrice) return;
-
-          // Count total adults and children after age processing
-          let totalAdults = adults;
-          let totalChildren = children.length;
-          let childrenAgesText = '';
-
-          // Process children ages to separate adults from children based on hotel's age limits
-          const hotelAgeRanges = hotelRoomMultipliers.map(rm => [
-            rm.birinci_cocuk_yas_araligi,
-            rm.ikinci_cocuk_yas_araligi,
-            rm.ucuncu_cocuk_yas_araligi
-          ]).flat().filter(age => age > 0);
-
-          const maxChildAge = Math.max(...hotelAgeRanges);
-          const validChildren: number[] = [];
-          
-          children.forEach(age => {
-            if (age <= maxChildAge) {
-              validChildren.push(age);
-            } else {
-              totalAdults++; // Child becomes adult based on hotel's age limit
-              totalChildren--;
-            }
-          });
-
-          childrenAgesText = validChildren.join(', ');
-
-          // Create hotel result for this combination
-          const hotelResult: HotelResult = {
-            hotelName: hotel.otel_adi,
-            city: hotel.otel_lokasyon,
-            roomType: bestPrice.roomType,
-            totalRooms: bestPrice.roomArrangement.length,
-            concept: bestPrice.concept,
-            totalPrice: bestPrice.totalPrice,
-            pricePerNight: bestPrice.pricePerNight,
-            nights: bestPrice.nights,
-            roomArrangement: bestPrice.roomArrangement
-          };
-
-          hotelResults.push(hotelResult);
-        });
-
-      } catch (hotelError) {
-        console.error(`Error processing hotel ${hotel.otel_adi}:`, hotelError);
-        // Continue with other hotels
-      }
+    // Find specific hotel
+    const hotel = hotels.find(h => h.otel_id === hotelId);
+    
+    if (!hotel) {
+      return NextResponse.json(
+        { error: 'Otel bulunamadı' },
+        { status: 404 }
+      );
     }
 
-    // Prepare response
-    const response: SearchResponse = {
-      searchParams: {
-        checkIn,
-        checkOut,
-        totalAdults: adults,
-        totalChildren: children.length,
-        childrenAges: children.join(', ')
-      },
-      hotels: hotelResults
-    };
+    // Get detailed room configurations
+    const hotelRoomMultipliers = roomMultipliers.filter(rm => rm.otel_id === hotelId);
+    
+    // Get detailed price information
+    const hotelPricesData = hotelPrices.filter(hp => hp.otel_id === hotelId);
 
-    return NextResponse.json(response);
+    // Group room configurations by room type
+    const roomTypeDetails = hotelRoomMultipliers.reduce((acc, rm) => {
+      if (!acc[rm.oda_tipi]) {
+        acc[rm.oda_tipi] = [];
+      }
+      acc[rm.oda_tipi].push({
+        yetiskin_sayisi: rm.yetiskin_sayisi,
+        cocuk_sayisi: rm.cocuk_sayisi,
+        birinci_cocuk_yas_araligi: rm.birinci_cocuk_yas_araligi,
+        ikinci_cocuk_yas_araligi: rm.ikinci_cocuk_yas_araligi,
+        ucuncu_cocuk_yas_araligi: rm.ucuncu_cocuk_yas_araligi,
+        carpan: rm.carpan
+      });
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    // Group prices by concept and room type
+    const priceDetails = hotelPricesData.reduce((acc, price) => {
+      const key = `${price.konsept}_${price.oda_tipi}`;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push({
+        tarih_baslangic: price.tarih_baslangic,
+        tarih_bitis: price.tarih_bitis,
+        fiyat: price.fiyat,
+        para_birimi: price.para_birimi
+      });
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    return NextResponse.json({
+      success: true,
+      hotel: {
+        ...hotel,
+        roomTypeDetails,
+        priceDetails
+      }
+    });
 
   } catch (error) {
-    console.error('Calculate price API error:', error);
+    console.error('Hotel details API error:', error);
     return NextResponse.json(
-      { error: 'Sunucu hatası', details: error instanceof Error ? error.message : 'Bilinmeyen hata' },
+      { 
+        success: false,
+        error: 'Sunucu hatası', 
+        details: error instanceof Error ? error.message : 'Bilinmeyen hata' 
+      },
       { status: 500 }
     );
   }
-}
-
-export async function GET() {
-  return NextResponse.json(
-    { 
-      message: 'Hotel Price Calculator API',
-      endpoint: '/api/calculate-price',
-      method: 'POST',
-      example: {
-        checkIn: '2025-08-01',
-        checkOut: '2025-08-05',
-        adults: 2,
-        children: [8, 12]
-      }
-    },
-    { status: 200 }
-  );
 }
